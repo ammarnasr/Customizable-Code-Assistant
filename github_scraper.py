@@ -79,13 +79,10 @@ def get_code_contents(file):
     """
     Get the raw content of a code file
     """
-    raw_url = file.download_url
-    raw_content = requests.get(raw_url).text
-    return raw_content
-
-def extract_code_text(raw_content):
-    """
-    Extract text from code, removing code-specific syntax
-    """
-    # Code here to extract just text from code
-    return text
+    try:
+        raw_url = file.download_url
+        raw_content = requests.get(raw_url).text
+        return raw_content
+    except Exception as e:
+        print(f"Error getting raw content for {file.name}: {e}")
+        return []
