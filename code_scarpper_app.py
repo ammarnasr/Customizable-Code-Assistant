@@ -5,6 +5,7 @@ from query_builder import GitHubRepoSearchQueryBuilder as QueryBuilder
 import datetime
 import joblib
 import os
+import matplotlib.pyplot as plt
 
 def cache_search_results(query, max_results):
     cache_dir = os.path.join(os.getcwd(), "cache")
@@ -48,137 +49,147 @@ with serch_tab:
     st.markdown("---")
     search_term = st.text_input("Search term", "pentesting")
 
-    with st.expander('Search_in'):
-        global_key += 1
-        name = st.checkbox('Name', value=False, key=global_key)
-        global_key += 1
-        description = st.checkbox('Description', value=False, key=global_key)
-        global_key += 1
-        readme = st.checkbox('Readme', value=False, key=global_key)
-        global_key += 1
-        topics = st.checkbox('Topics', value=False, key=global_key)
+    search_col1, search_col2, search_col3, search_col4 = st.columns([1,1,1,1])
 
-    with st.expander('Specific Repo'):
-        global_key += 1
-        owner = st.text_input("Owner", "skip", key=global_key)
-        global_key += 1
-        repo_name = st.text_input("Name", "skip", key=global_key)
 
-    with st.expander('Specific User'):
-        global_key += 1
-        user = st.text_input("User", "skip", key=global_key)
+    with search_col1:
+            
+        with st.expander('Search_in'):
+            global_key += 1
+            name = st.checkbox('Name', value=False, key=global_key)
+            global_key += 1
+            description = st.checkbox('Description', value=False, key=global_key)
+            global_key += 1
+            readme = st.checkbox('Readme', value=False, key=global_key)
+            global_key += 1
+            topics = st.checkbox('Topics', value=False, key=global_key)
 
-    with st.expander('Specific Org'):
-        global_key += 1
-        org = st.text_input("Org", "skip", key=global_key)
+        with st.expander('Specific Repo'):
+            global_key += 1
+            owner = st.text_input("Owner", "skip", key=global_key)
+            global_key += 1
+            repo_name = st.text_input("Name", "skip", key=global_key)
 
-    with st.expander('Size (1000 = 1MB)'):
-        global_key += 1
-        min_size = st.number_input("Min Size", 0, 100000, 666, key=global_key)
-        global_key += 1
-        max_size = st.number_input("Max Size", 0, 100000, 666, key=global_key)
-        global_key += 1
-        exact_size = st.number_input("Exact Size", 0, 100000, 666, key=global_key)
+        with st.expander('Specific User'):
+            global_key += 1
+            user = st.text_input("User", "skip", key=global_key)
 
-    with st.expander('Follower'):
-        global_key += 1
-        min_followers = st.number_input("Min Followers", 0, 100000, 666, key=global_key)
-        global_key += 1
-        max_followers = st.number_input("Max Followers", 0, 100000, 666, key=global_key)
-        global_key += 1
-        exact_followers = st.number_input("Exact Followers", 0, 100000, 666, key=global_key)
+        with st.expander('Specific Org'):
+            global_key += 1
+            org = st.text_input("Org", "skip", key=global_key)
 
-    with st.expander('Forks'):
-        global_key += 1
-        min_forks = st.number_input("Min Forks", 0, 100000, 666, key=global_key)
-        global_key += 1
-        max_forks = st.number_input("Max Forks", 0, 100000, 666, key=global_key)
-        global_key += 1
-        exact_forks = st.number_input("Exact Forks", 0, 100000, 666, key=global_key)
+        with st.expander('Number of Good First Issues'):
+            global_key += 1
+            min_good_first_issues = st.number_input("Min Good First Issues", 0, 1000, 666, key=global_key)
+            global_key += 1
+            max_good_first_issues = st.number_input("Max Good First Issues", 0, 1000, 666, key=global_key)
+            global_key += 1
+            exact_good_first_issues = st.number_input("Exact Good First Issues", 0, 1000, 666, key=global_key)
 
-    with st.expander('Stars'):
-        global_key += 1
-        min_stars = st.number_input("Min Stars", 0, 100000, 666, key=global_key)
-        global_key += 1
-        max_stars = st.number_input("Max Stars", 0, 100000, 666, key=global_key)
-        global_key += 1
-        exact_stars = st.number_input("Exact Stars", 0, 100000, 666, key=global_key)
+    with search_col2:
 
-    with st.expander('Created'):
-        global_key += 1
-        min_created = st.date_input("Min Created", datetime.date(2000, 1, 1), key=global_key)
-        global_key += 1
-        max_created = st.date_input("Max Created", datetime.date(2000, 1, 1), key=global_key)
-        global_key += 1
-        exact_created = st.date_input("Exact Created", datetime.date(2000, 1, 1), key=global_key)
+        with st.expander('Size (1000 = 1MB)'):
+            global_key += 1
+            min_size = st.number_input("Min Size", 0, 100000, 666, key=global_key)
+            global_key += 1
+            max_size = st.number_input("Max Size", 0, 100000, 666, key=global_key)
+            global_key += 1
+            exact_size = st.number_input("Exact Size", 0, 100000, 666, key=global_key)
 
-    with st.expander('Pushed'):
-        global_key += 1
-        min_pushed = st.date_input("Min Pushed", datetime.date(2000, 1, 1), key=global_key)
-        global_key += 1
-        max_pushed = st.date_input("Max Pushed", datetime.date(2000, 1, 1), key=global_key)
-        global_key += 1
-        exact_pushed = st.date_input("Exact Pushed", datetime.date(2000, 1, 1), key=global_key)
+        with st.expander('Follower'):
+            global_key += 1
+            min_followers = st.number_input("Min Followers", 0, 100000, 666, key=global_key)
+            global_key += 1
+            max_followers = st.number_input("Max Followers", 0, 100000, 666, key=global_key)
+            global_key += 1
+            exact_followers = st.number_input("Exact Followers", 0, 100000, 666, key=global_key)
 
-    with st.expander('Language'):
-        global_key += 1
-        language = st.text_input("Language", "skip", key=global_key)
+        with st.expander('Forks'):
+            global_key += 1
+            min_forks = st.number_input("Min Forks", 0, 100000, 666, key=global_key)
+            global_key += 1
+            max_forks = st.number_input("Max Forks", 0, 100000, 666, key=global_key)
+            global_key += 1
+            exact_forks = st.number_input("Exact Forks", 0, 100000, 666, key=global_key)
 
-    with st.expander('Topic'):
-        global_key += 1
-        topic = st.text_input("Topic", "skip", key=global_key)
+        with st.expander('Stars'):
+            global_key += 1
+            min_stars = st.number_input("Min Stars", 0, 100000, 666, key=global_key)
+            global_key += 1
+            max_stars = st.number_input("Max Stars", 0, 100000, 666, key=global_key)
+            global_key += 1
+            exact_stars = st.number_input("Exact Stars", 0, 100000, 666, key=global_key)
 
-    with st.expander('Number of Topics'):
-        global_key += 1
-        min_topics = st.number_input("Min Topics", 0, 1000, 666, key=global_key)
-        global_key += 1
-        max_topics = st.number_input("Max Topics", 0, 1000, 666, key=global_key)
-        global_key += 1
-        exact_topics = st.number_input("Exact Topics", 0, 1000, 666, key=global_key)
+        with st.expander('Number of Help Wanted Issues'):
+            global_key += 1
+            min_help_wanted_issues = st.number_input("Min Help Wanted Issues", 0, 1000, 666, key=global_key)
+            global_key += 1
+            max_help_wanted_issues = st.number_input("Max Help Wanted Issues", 0, 1000, 666, key=global_key)
+            global_key += 1
+            exact_help_wanted_issues = st.number_input("Exact Help Wanted Issues", 0, 1000, 666, key=global_key)
 
-    with st.expander('License'):
-        global_key += 1
-        license = st.text_input("License", "skip", key=global_key)
+    with search_col3:
 
-    with st.expander('Is Public or Private'):
-        options = ('public', 'private', 'skip')
-        global_key += 1
-        public_or_private = st.selectbox('Public or Private', options, index=2, key=global_key)
+        with st.expander('Created'):
+            global_key += 1
+            min_created = st.date_input("Min Created", datetime.date(2000, 1, 1), key=global_key)
+            global_key += 1
+            max_created = st.date_input("Max Created", datetime.date(2000, 1, 1), key=global_key)
+            global_key += 1
+            exact_created = st.date_input("Exact Created", datetime.date(2000, 1, 1), key=global_key)
 
-    with st.expander('Is Archived'):
-        options = ('true', 'false', 'skip')
-        global_key += 1
-        is_archived = st.selectbox('Is Archived', options, index=2, key=global_key)
+        with st.expander('Pushed'):
+            global_key += 1
+            min_pushed = st.date_input("Min Pushed", datetime.date(2000, 1, 1), key=global_key)
+            global_key += 1
+            max_pushed = st.date_input("Max Pushed", datetime.date(2000, 1, 1), key=global_key)
+            global_key += 1
+            exact_pushed = st.date_input("Exact Pushed", datetime.date(2000, 1, 1), key=global_key)
 
-    with st.expander('Number of Good First Issues'):
-        global_key += 1
-        min_good_first_issues = st.number_input("Min Good First Issues", 0, 1000, 666, key=global_key)
-        global_key += 1
-        max_good_first_issues = st.number_input("Max Good First Issues", 0, 1000, 666, key=global_key)
-        global_key += 1
-        exact_good_first_issues = st.number_input("Exact Good First Issues", 0, 1000, 666, key=global_key)
+        with st.expander('Language'):
+            global_key += 1
+            language = st.text_input("Language", "skip", key=global_key)
 
-    with st.expander('Number of Help Wanted Issues'):
-        global_key += 1
-        min_help_wanted_issues = st.number_input("Min Help Wanted Issues", 0, 1000, 666, key=global_key)
-        global_key += 1
-        max_help_wanted_issues = st.number_input("Max Help Wanted Issues", 0, 1000, 666, key=global_key)
-        global_key += 1
-        exact_help_wanted_issues = st.number_input("Exact Help Wanted Issues", 0, 1000, 666, key=global_key)
+        with st.expander('Topic'):
+            global_key += 1
+            topic = st.text_input("Topic", "skip", key=global_key)
 
-    with st.expander('Show Help'):
-        st.write(QueryBuilder().help())
+        with st.expander('Show Help'):
+            st.write(QueryBuilder().help())
 
+    with search_col4:
+            
+        with st.expander('Number of Topics'):
+            global_key += 1
+            min_topics = st.number_input("Min Topics", 0, 1000, 666, key=global_key)
+            global_key += 1
+            max_topics = st.number_input("Max Topics", 0, 1000, 666, key=global_key)
+            global_key += 1
+            exact_topics = st.number_input("Exact Topics", 0, 1000, 666, key=global_key)
+
+        with st.expander('License'):
+            global_key += 1
+            license = st.text_input("License", "skip", key=global_key)
+
+        with st.expander('Is Public or Private'):
+            options = ('public', 'private', 'skip')
+            global_key += 1
+            public_or_private = st.selectbox('Public or Private', options, index=2, key=global_key)
+
+        with st.expander('Is Archived'):
+            options = ('true', 'false', 'skip')
+            global_key += 1
+            is_archived = st.selectbox('Is Archived', options, index=2, key=global_key)
 
 
 
     global_key += 1
-    build_query = st.button("Build Query", key=global_key)
-
-    query = None
+    _, query_col, _ = st.columns([6,3,6])
+    with query_col:
+        build_query = st.button("Build Query", key=global_key, use_container_width=True, type='primary')
+    query = 'Query Not Built Yet'
     if 'query' not in st.session_state:
         st.session_state['query'] = query
-
 
     if build_query:
         qb_obj = QueryBuilder()
@@ -290,24 +301,26 @@ with serch_tab:
         if exact_help_wanted_issues != 666:
             qb_obj = qb_obj.help_wanted_issues(exact_help_wanted_issues)
 
+        st.markdown("#### Query Params")
         st.write(qb_obj.query_params)
 
 
         query = qb_obj.build()
         st.session_state['query'] = query
 
-    st.write(query)
+    st.markdown("#### Query")
     st.code(query, language="python", line_numbers=True)
 
-    print(query)
+    st.markdown("#### Max Number of Repos to Return")
     global_key += 1
     max_results = st.number_input("Max Results", 0, 1000, 1, key=global_key)
-    global_key += 1
-    search = st.button("Search", key=global_key)
 
+    st.markdown("#### Save Results to CSV")
     global_key += 1
     filename = st.text_input('Filename', f'{search_term}_{max_results}.csv', key=global_key)
 
+    global_key += 1
+    search = st.button("Search", key=global_key, use_container_width=True, type='primary')
     if search:
         query = st.session_state['query']
         df = cache_search_results(query, max_results)
@@ -379,47 +392,7 @@ with extract_tab:
 
 
 with browse_tab:
-    st.markdown("## Browse Saved Searches Results")
-    st.markdown("---")
-    saved_searches = os.listdir("./saved_searches")
-    saved_searches = [x for x in saved_searches if x.endswith("_with_code.csv")]
-    global_key += 1
-    filename = st.selectbox('Select File', saved_searches, key=global_key)
-    filepath = f'./saved_searches/{filename}'
-    df = pd.read_csv(filepath)
-    if 'status' not in df.columns:
-        st.warning("Status Column Not Found. Adding Status Column")
-        df['status'] = 'pending'
-        df['status_time'] = datetime.datetime.now()
-    st.table(df.head(1))
-
-    with st.expander('Filter by Min Stars'):
-        global_key += 1
-        min_stars = st.number_input("Min Stars", 0, 100000, 666, key=global_key)
-        df = df[df['stars'] >= min_stars]
-
-    with st.expander('Filter by License'):
-        options = df['license'].unique().tolist()
-        options = options + ['skip']
-        global_key += 1
-        license = st.selectbox('License', options, index=len(options)-1, key=global_key)
-        if license != "skip":
-            df = df[df['license'] == license]   
     
-    
-    st.markdown("#### After Filter")
-    st.write(f"Number of Repos: {len(df)}")
-    st.write(df.head())
-
-    if 'current_browse_row' not in st.session_state:
-        current_row = 0
-        st.session_state['current_browse_row'] = current_row
-    else:
-        current_row = st.session_state['current_browse_row']
-
-    st.markdown(f"#### Browse row by row")
-    number_of_rows = len(df)
-
     def display_row(src_df, target_row):
         row = src_df.iloc[target_row]
         repo_name = row['name']
@@ -461,136 +434,302 @@ with browse_tab:
         repo_status_time = row['status_time']
         status_color = status_color_dict[repo_status]
 
-        st.markdown(f"Showing row {target_row} of {len(src_df)}")
+        st.markdown(f"Showing row {target_row} of {len(src_df)-1}")
         st.markdown(f"Status: :{status_color}[{repo_status.upper()}]")
         st.markdown(f"Last Updated: {repo_status_time}")
 
+        inf_col1, inf_col3 = st.columns([2,1])
 
-        with st.expander('Main Repo Inofrmation'):
-            st.write(f"Name of the Repo: {repo_name}")
-            st.write(f"URL of the Repo: {repo_url}")
-            st.write(f"Description \n: {repo_description}")
-            st.write(f"No. of Stars: {repo_stars}")
-            st.write(f"Licence: {repo_license}")
-            st.write(f"Created: {repo_created}")
-            st.write(f"Last Updated: {repo_last_updated}")
-            st.write(f"Languages: {repo_languages}")
-            st.write(f"Topics: {repo_topics}")
-            st.write(f"Size in MB: {repo_size/1000 :.2f}MB")
-        
-        with st.expander('Owner Inofrmation'):
-            st.write(f"Owner: {repo_owner}")
-            st.write(f"Owner Type: {repo_owner_type}")
-            st.write(f"Owner URL: {repo_owner_url}")
+        with inf_col1:
+            with st.expander('Main Repo Inofrmation'):
 
-        with st.expander('Extra Repo Inofrmation'):
-            st.write(f"No. of Forks: {repo_forks}")
-            st.write(f"No. of Contributors: {repo_contributors}")
-            st.write(f"No. of Commits: {repo_commits}")
-            st.write(f"No. of Branches: {repo_branches}")
-            st.write(f"No. of Releases: {repo_releases}")
-            st.write(f"No. of Watchers: {repo_watchers}")
-            st.write(f"No. of Open Issues: {repo_open_issues}")
-            st.write(f"Default Branch: {repo_default_branch}")
+                st.markdown(f"**Name of the Repo** :\n{repo_name}")
+                st.markdown('---')
+                st.markdown(f"**URL of the Repo**  :{repo_url}")
+                st.markdown('---')
+                st.markdown(f"**Description**      :{repo_description}")
+                st.markdown('---')
+                st.markdown(f"**No. of Stars**     :{repo_stars}")
+                st.markdown('---')
+                st.markdown(f"**Licence**          :{repo_license}")
+                st.markdown('---')
+                st.markdown(f"**Created**          :{repo_created}")
+                st.markdown('---')
+                st.markdown(f"**Last Updated**     :{repo_last_updated}")
+                st.markdown('---')
+                st.markdown(f"**Languages**        :{repo_languages}")
+                st.markdown('---')
+                st.markdown(f"**Topics**           :{repo_topics}")
+                st.markdown('---')
+                st.markdown(f"**Size in MB**       :{repo_size/1000 :.2f}MB")
 
-        python_dict = eval(repo_Python)
-        number_of_python_files = len(python_dict)
-        with st.expander(f'Python Files ({number_of_python_files})'):
-            for key, value in python_dict.items():
-                st.write(f"#### {key}")
-                st.code(value, language="python", line_numbers=True)
+        with inf_col3:
+            with st.expander('Extra Repo Inofrmation'):
+                # st.write(f"No. of Forks: {repo_forks}")
+                # st.write(f"No. of Contributors: {repo_contributors}")
+                # st.write(f"No. of Commits: {repo_commits}")
+                # st.write(f"No. of Branches: {repo_branches}")
+                # st.write(f"No. of Releases: {repo_releases}")
+                # st.write(f"No. of Watchers: {repo_watchers}")
+                # st.write(f"No. of Open Issues: {repo_open_issues}")
+                # st.write(f"Default Branch: {repo_default_branch}")
+                st.markdown(f"**No. of Forks**      :{repo_forks}")
+                st.markdown('---')
+                st.markdown(f"**No. of Contributs** :{repo_contributors}")
+                st.markdown('---')
+                st.markdown(f"**No. of Commits**    :{repo_commits}")
+                st.markdown('---')
+                st.markdown(f"**No. of Branches**   :{repo_branches}")
+                st.markdown('---')
+                st.markdown(f"**No. of Releases**   :{repo_releases}")
+                st.markdown('---')
+                st.markdown(f"**No. of Watchers**   :{repo_watchers}")
+                st.markdown('---')
+                st.markdown(f"**No. of Open Issues**:{repo_open_issues}")
+                st.markdown('---')
+                st.markdown(f"**Default Branch**    :{repo_default_branch}")
 
-        r_dict = eval(repo_R)
-        number_of_r_files = len(r_dict)
-        with st.expander(f'R Files ({number_of_r_files})'):
-            for key, value in r_dict.items():
-                st.write(f"#### {key}")
-                st.code(value, language="r", line_numbers=True)
+        code_col1, code_col2, code_col3 = st.columns([2,18,2])
 
-        java_dict = eval(repo_Java)
-        number_of_java_files = len(java_dict)
-        with st.expander(f'Java Files ({number_of_java_files})'):
-            for key, value in java_dict.items():
-                st.write(f"#### {key}")
-                st.code(value, language="java", line_numbers=True)
+        with code_col2:
+            python_dict = eval(repo_Python)
+            number_of_python_files = len(python_dict)
+            with st.expander(f'Python Files ({number_of_python_files})'):
+                for key, value in python_dict.items():
+                    st.write(f"#### {key}")
+                    st.code(value, language="python", line_numbers=True)
 
-        js_dict = eval(repo_JavaScript)
-        number_of_js_files = len(js_dict)
-        with st.expander(f'JavaScript Files ({number_of_js_files})'):
-            for key, value in js_dict.items():
-                st.write(f"#### {key}")
-                st.code(value, language="javascript", line_numbers=True)
+            r_dict = eval(repo_R)
+            number_of_r_files = len(r_dict)
+            with st.expander(f'R Files ({number_of_r_files})'):
+                for key, value in r_dict.items():
+                    st.write(f"#### {key}")
+                    st.code(value, language="r", line_numbers=True)
 
-        go_dict = eval(repo_Go)
-        number_of_go_files = len(go_dict)
-        with st.expander(f'Go Files ({number_of_go_files})'):
-            for key, value in go_dict.items():
-                st.write(f"#### {key}")
-                st.code(value, language="go", line_numbers=True)
+            java_dict = eval(repo_Java)
+            number_of_java_files = len(java_dict)
+            with st.expander(f'Java Files ({number_of_java_files})'):
+                for key, value in java_dict.items():
+                    st.write(f"#### {key}")
+                    st.code(value, language="java", line_numbers=True)
 
-        c_dict = eval(repo_C)
-        number_of_c_files = len(c_dict)
-        with st.expander(f'C Files ({number_of_c_files})'):
-            for key, value in c_dict.items():
-                st.write(f"#### {key}")
-                st.code(value, language="c", line_numbers=True)
+        with code_col2:
+            js_dict = eval(repo_JavaScript)
+            number_of_js_files = len(js_dict)
+            with st.expander(f'JavaScript Files ({number_of_js_files})'):
+                for key, value in js_dict.items():
+                    st.write(f"#### {key}")
+                    st.code(value, language="javascript", line_numbers=True)
 
-        cpp_dict = eval(repo_Cpp)
-        number_of_cpp_files = len(cpp_dict)
-        with st.expander(f'C++ Files ({number_of_cpp_files})'):
-            for key, value in cpp_dict.items():
-                st.write(f"#### {key}")
-                st.code(value, language="cpp", line_numbers=True)
+            go_dict = eval(repo_Go)
+            number_of_go_files = len(go_dict)
+            with st.expander(f'Go Files ({number_of_go_files})'):
+                for key, value in go_dict.items():
+                    st.write(f"#### {key}")
+                    st.code(value, language="go", line_numbers=True)
 
-        cs_dict = eval(repo_Cs)
-        number_of_cs_files = len(cs_dict)
-        with st.expander(f'C# Files ({number_of_cs_files})'):
-            for key, value in cs_dict.items():
-                st.write(f"#### {key}")
-                st.code(value, language="csharp", line_numbers=True)
+            c_dict = eval(repo_C)
+            number_of_c_files = len(c_dict)
+            with st.expander(f'C Files ({number_of_c_files})'):
+                for key, value in c_dict.items():
+                    st.write(f"#### {key}")
+                    st.code(value, language="c", line_numbers=True)
 
+        with code_col2:
+            cpp_dict = eval(repo_Cpp)
+            number_of_cpp_files = len(cpp_dict)
+            with st.expander(f'C++ Files ({number_of_cpp_files})'):
+                for key, value in cpp_dict.items():
+                    st.write(f"#### {key}")
+                    st.code(value, language="cpp", line_numbers=True)
 
+            cs_dict = eval(repo_Cs)
+            number_of_cs_files = len(cs_dict)
+            with st.expander(f'C# Files ({number_of_cs_files})'):
+                for key, value in cs_dict.items():
+                    st.write(f"#### {key}")
+                    st.code(value, language="csharp", line_numbers=True)
 
     def update_row_status(src_df, target_row, status):
         src_df.at[target_row, 'status'] = status
         src_df.at[target_row, 'status_time'] = datetime.datetime.now()
         return src_df
 
-    st.write(f"##### ====== {current_row} of {number_of_rows} ======")
+
+    st.markdown("## Browse Saved Searches Results")
+    st.markdown("---")
+    saved_searches = os.listdir("./saved_searches")
+    saved_searches = [x for x in saved_searches if x.endswith("_with_code.csv")]
+    global_key += 1
+    filename = st.selectbox('Select File', saved_searches, key=global_key)
+    filepath = f'./saved_searches/{filename}'
+    df = pd.read_csv(filepath)
+    orginal_df = df.copy()
+    if 'status' not in df.columns:
+        df['status'] = 'pending'
+        df['status_time'] = datetime.datetime.now()
+
+    filter_col1, filter_col2, filter_col3 = st.columns(3)
+
+    applied_filters = []
+
+    with filter_col1:
+        
+        with st.expander('Filter by Min Stars'):
+            global_key += 1
+            min_stars = st.number_input("Min Stars", 0, 100000, 666, key=global_key)
+            if min_stars != 666:
+                df = df[df['stars'] >= min_stars]
+                applied_filters.append(f"Min Stars: {min_stars}")
+
+        with st.expander('Filter by License'):
+            options = df['license'].unique().tolist()
+            options = options + ['skip']
+            global_key += 1
+            license = st.selectbox('License', options, index=len(options)-1, key=global_key)
+            if license != "skip":
+                df = df[df['license'] == license]   
+                applied_filters.append(f"License: {license}")
+
+        with st.expander('Filter by Language'):
+            options = df['languages'].unique().tolist()
+            options = [list(eval(x).keys()) for x in options]
+            options = [item for sublist in options for item in sublist]
+            options = list(set(options))
+            options.sort()
+            options = options + ['skip']
+            global_key += 1
+            language = st.selectbox('Language', options, index=len(options)-1, key=global_key)
+            if language != "skip":
+                df = df[df['languages'].str.contains(language)]
+                applied_filters.append(f"Language: {language}")
+
+    with filter_col2:
+    
+        with st.expander('Filter by Topics'):
+            options = df['topics'].unique().tolist()
+            options = [list(eval(x)) for x in options]
+            options = [item for sublist in options for item in sublist]
+            options = list(set(options))
+            options.sort()
+            options = options + ['skip']
+            global_key += 1
+            topic = st.selectbox('Topic', options, index=len(options)-1, key=global_key)
+            if topic != "skip":
+                df = df[df['topics'].str.contains(topic)]
+                applied_filters.append(f"Topic: {topic}")
+
+        with st.expander('Filter by Size (1000 = 1MB)'):
+            global_key += 1
+            min_size = st.number_input("Min Size", 0, 100000, 666, key=global_key)
+            if min_size != 666:
+                df = df[df['size'] >= min_size]
+                applied_filters.append(f"Min Size: {min_size}")
+
+        with st.expander('Filter by Number of Commits'):
+            global_key += 1
+            min_commits = st.number_input("Min Commits", 0, 100000, 666, key=global_key)
+            if min_commits != 666:
+                df = df[df['commits'] >= min_commits]
+                applied_filters.append(f"Min Commits: {min_commits}")
+
+    with filter_col3:
+
+        with st.expander('Filter by Number of Forks'):
+            global_key += 1
+            min_forks = st.number_input("Min Forks", 0, 100000, 666, key=global_key)
+            if min_forks != 666:
+                df = df[df['forks'] >= min_forks]
+                applied_filters.append(f"Min Forks: {min_forks}")
+
+        with st.expander('Filter by Created'):
+            global_key += 1
+            min_created = st.date_input("Min Created", datetime.date(2000, 1, 1), key=global_key)
+            if min_created != datetime.date(2000, 1, 1):
+                df['created'] = pd.to_datetime(df['created']).dt.date
+                df = df[df['created'] >= min_created]
+                applied_filters.append(f"Min Created: {min_created}")
+
+        with st.expander('Filter by Last Updated'):
+            global_key += 1
+            min_last_updated = st.date_input("Min Last Updated", datetime.date(2000, 1, 1), key=global_key)
+            if min_last_updated != datetime.date(2000, 1, 1):
+                df['last_updated'] = pd.to_datetime(df['last_updated']).dt.date
+                df = df[df['last_updated'] >= min_last_updated]
+                applied_filters.append(f"Min Last Updated: {min_last_updated}")
+   
+    st.markdown("#### After Filter")
+    st.write(f"Number of Repos: is now :green[ {len(df)} ] from :red[ {len(orginal_df)} ]")
+    st.write(f"Applied Filters: {applied_filters}")
+    st.write(df.head())
+
+
+
+    number_of_rows = len(df) - 1
+    if 'current_browse_row' not in st.session_state:
+        current_row = 0
+        st.session_state['current_browse_row'] = current_row
+    else:
+        current_row = st.session_state['current_browse_row']
+
+    st.markdown(f"#### Browse row by row ({current_row} of {number_of_rows})")
+    fig, ax = plt.subplots(figsize=(10,1))
+    status_counts = df['status'].value_counts()
+    status_counts = status_counts.sort_index()
+    st.write(status_counts)
+    labels = ['Accepted', 'Pending', 'Rejected']
+    colors = ['mediumseagreen', 'goldenrod', 'firebrick']
+    if 'accepted' not in status_counts:
+        colors = ['goldenrod', 'firebrick']
+    if 'rejected' not in status_counts:
+        colors = ['mediumseagreen', 'goldenrod']
+    if 'pending' not in status_counts:
+        colors = ['mediumseagreen', 'firebrick']
+    for i, (status, count) in enumerate(status_counts.items()):
+        ax.barh(0, count, left=status_counts[:i].sum(), color=colors[i], label=status)
+    #hide both axes
+    ax.axis('off')
+    ax.legend(ncol=3, bbox_to_anchor=(0, 1),
+            loc='lower left', fontsize='small')
+    st.pyplot(fig)
+
     display_row(df, current_row)
 
-    col1, col2, col3, col4, col5, col6, col7 = st.columns([1,2,1,2,1,2,1])
+    col1, col2, col3, col4, col5, col6, col7 = st.columns([2,1,3,1,3,1,2])
 
     with col1:
         global_key += 1
-        prev = st.button("Prev", key=global_key)
+        prev = st.button("Prev", key=global_key, use_container_width=True)
         if prev:
             if current_row > 0:
                 current_row -= 1
                 st.session_state['current_browse_row'] = current_row
+            else:
+                st.warning("Already on the first row")
                 
     with col7:
         global_key += 1
-        next = st.button("Next", key=global_key)
+        next = st.button("Next", key=global_key, use_container_width=True)
         if next:
-            if current_row < number_of_rows-1:
+            if current_row < number_of_rows:
                 current_row += 1
                 st.session_state['current_browse_row'] = current_row
-
-    with col5:
-        global_key += 1
-        accpet = st.button("Accept", key=global_key)
-        if accpet:
-            df = update_row_status(df, current_row, 'accepted')
-            st.table(df.head(1))
-            df.to_csv(filepath, index=False)
-            st.success(f"Row {current_row} Accepted and Saved to {filepath}")
+            else:
+                st.warning("Already on the last row")
 
     with col3:
         global_key += 1
-        reject = st.button("Reject", key=global_key)
+        reject = st.button("Reject", key=global_key, use_container_width=True, type='primary')
         if reject:
             df = update_row_status(df, current_row, 'rejected')
             st.table(df.head(1))
             df.to_csv(filepath, index=False)
             st.success(f"Row {current_row} Rejected and Saved to {filepath}")
+
+    with col5:
+        global_key += 1
+        accpet = st.button("Accept", key=global_key, use_container_width=True, type='primary')
+        if accpet:
+            df = update_row_status(df, current_row, 'accepted')
+            df.to_csv(filepath, index=False)
+            st.success(f"Row {current_row} Accepted and Saved to {filepath}")
