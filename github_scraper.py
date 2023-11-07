@@ -16,7 +16,6 @@ def set_token(token, file_path='env.json'):
         f.seek(0)
         json.dump(env, f, indent=4)
         f.truncate()
-set_token("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")
 
 
 def authenticate(file_path='env.json'):
