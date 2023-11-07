@@ -387,6 +387,10 @@ with browse_tab:
     filename = st.selectbox('Select File', saved_searches, key=global_key)
     filepath = f'./saved_searches/{filename}'
     df = pd.read_csv(filepath)
+    if 'status' not in df.columns:
+        st.warning("Status Column Not Found. Adding Status Column")
+        df['status'] = 'pending'
+        df['status_time'] = datetime.datetime.now()
     st.table(df.head(1))
 
     with st.expander('Filter by Min Stars'):
@@ -447,7 +451,22 @@ with browse_tab:
         repo_C = row['C']
         repo_Cpp = row['C++']
         repo_Cs = row['C#']
-        with st.expander('Main Repo Inofrmation', expanded=True):
+
+        status_color_dict = {
+            'pending': 'orange',
+            'accepted': 'green',
+            'rejected': 'red',
+        }
+        repo_status = row['status']
+        repo_status_time = row['status_time']
+        status_color = status_color_dict[repo_status]
+
+        st.markdown(f"Showing row {target_row} of {len(src_df)}")
+        st.markdown(f"Status: :{status_color}[{repo_status.upper()}]")
+        st.markdown(f"Last Updated: {repo_status_time}")
+
+
+        with st.expander('Main Repo Inofrmation'):
             st.write(f"Name of the Repo: {repo_name}")
             st.write(f"URL of the Repo: {repo_url}")
             st.write(f"Description \n: {repo_description}")
@@ -530,13 +549,17 @@ with browse_tab:
                 st.write(f"#### {key}")
                 st.code(value, language="csharp", line_numbers=True)
 
-                
 
+
+    def update_row_status(src_df, target_row, status):
+        src_df.at[target_row, 'status'] = status
+        src_df.at[target_row, 'status_time'] = datetime.datetime.now()
+        return src_df
 
     st.write(f"##### ====== {current_row} of {number_of_rows} ======")
     display_row(df, current_row)
 
-    col1, col2, col3, col4, col5 = st.columns([1,2,1,2,1])
+    col1, col2, col3, col4, col5, col6, col7 = st.columns([1,2,1,2,1,2,1])
 
     with col1:
         global_key += 1
@@ -546,7 +569,7 @@ with browse_tab:
                 current_row -= 1
                 st.session_state['current_browse_row'] = current_row
                 
-    with col5:
+    with col7:
         global_key += 1
         next = st.button("Next", key=global_key)
         if next:
@@ -554,10 +577,20 @@ with browse_tab:
                 current_row += 1
                 st.session_state['current_browse_row'] = current_row
 
-    with col3:
+    with col5:
         global_key += 1
         accpet = st.button("Accept", key=global_key)
         if accpet:
-            st.write("Accepted")
-            current_row += 1
-            st.session_state['current_browse_row'] = current_row
+            df = update_row_status(df, current_row, 'accepted')
+            st.table(df.head(1))
+            df.to_csv(filepath, index=False)
+            st.success(f"Row {current_row} Accepted and Saved to {filepath}")
+
+    with col3:
+        global_key += 1
+        reject = st.button("Reject", key=global_key)
+        if reject:
+            df = update_row_status(df, current_row, 'rejected')
+            st.table(df.head(1))
+            df.to_csv(filepath, index=False)
+            st.success(f"Row {current_row} Rejected and Saved to {filepath}")

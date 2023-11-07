@@ -66,7 +66,14 @@ def get_repo_contents(g, repo_name):
     """
     repo = g.get_repo(repo_name)
     contents = repo.get_contents("")
-    return contents
+    final_contents = []
+    while contents:
+        file_content = contents.pop(0)
+        if file_content.type == "dir":
+            contents.extend(repo.get_contents(file_content.path))
+        else:
+            final_contents.append(file_content)
+    return final_contents
 
 def filter_code_files(contents, code_extensions=(".py", ".r", ".java")):
     """
