@@ -4,17 +4,26 @@ from github import Github, Auth
 import pandas as pd
 from tqdm.auto import tqdm
 from query_builder import GitHubRepoSearchQueryBuilder as QueryBuilder
+import json
 
 
 
-def set_token(token):
+def set_token(token, file_path='env.json'):
     """Set GitHub access token"""
-    os.environ['GITHUB_TOKEN'] = token
-set_token("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")
+    with open(file_path, 'r+') as f:
+        env = json.load(f)
+        env['GITHUB_TOKEN'] = token
+        f.seek(0)
+        json.dump(env, f, indent=4)
+        f.truncate()
+set_token("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")
 
-def authenticate():
+
+def authenticate(file_path='env.json'):
     """Authenticate with GitHub API"""
-    access_token = os.environ.get("GITHUB_TOKEN")
+    with open(file_path, 'r') as f:
+        env = json.load(f)
+        access_token = env['GITHUB_TOKEN']
     auth = Auth.Token(access_token)
     g = Github(auth=auth)
     return g
