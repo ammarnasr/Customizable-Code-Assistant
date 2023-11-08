@@ -67,12 +67,22 @@ def get_repo_contents(g, repo_name):
     repo = g.get_repo(repo_name)
     contents = repo.get_contents("")
     final_contents = []
+    non_dir_count = 0
+    dir_count = 0
     while contents:
         file_content = contents.pop(0)
         if file_content.type == "dir":
             contents.extend(repo.get_contents(file_content.path))
+            dir_count += 1
         else:
             final_contents.append(file_content)
+            non_dir_count += 1
+        if non_dir_count  == 100:
+            print(f"Processed {non_dir_count} files")
+            break
+        if dir_count  == 100:
+            print(f"Processed {dir_count} directories")
+            break
     return final_contents
 
 def filter_code_files(contents, code_extensions=(".py", ".r", ".java")):
