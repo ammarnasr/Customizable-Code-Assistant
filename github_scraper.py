@@ -5,6 +5,7 @@ import pandas as pd
 from tqdm.auto import tqdm
 from query_builder import GitHubRepoSearchQueryBuilder as QueryBuilder
 import json
+import streamlit as st
 
 
 
@@ -20,9 +21,13 @@ def set_token(token, file_path='env.json'):
 
 def authenticate(file_path='env.json'):
     """Authenticate with GitHub API"""
-    with open(file_path, 'r') as f:
-        env = json.load(f)
-        access_token = env['GITHUB_TOKEN']
+    if not os.path.exists(file_path):
+        #read github token from st.secrets
+        access_token = st.secrets["GITHUB_TOKEN"]
+    else:
+        with open(file_path, 'r') as f:
+            env = json.load(f)
+            access_token = env['GITHUB_TOKEN']
     auth = Auth.Token(access_token)
     g = Github(auth=auth)
     return g
