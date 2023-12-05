@@ -230,6 +230,9 @@ def fetch_repos_app(k=0):
         df = cache_search_results(query, max_results)
         st.table(df.head(10))
         filepath = f'./saved_searches/{filename}'
+        save_dir = './saved_searches'
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
         df.to_csv(filepath, index=False)
         st.success(f"Saved to {filepath}")
 
