@@ -2,7 +2,10 @@ env.json
 saved_searches/*
 cache/*
 presentation/*
-
+wandb/*
+events.*
+wandb/run*
+fine_tuning_utils/wandb/run-20231206_145923-ozlxdrj1/files
 
 
 

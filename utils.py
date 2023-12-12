@@ -2,6 +2,8 @@ import json
 import joblib
 import os
 
+def utils():
+    print("This is the utils function of the repo_search_utils package.")
 
 def get_app_properties():
     """

@@ -1,5 +1,6 @@
 import os
 import utils
+import pickle
 import joblib
 import datetime
 import requests
@@ -8,6 +9,11 @@ import streamlit as st
 from repo_search_utils import github_scraper as gs
 from repo_search_utils import search_params_st as search_params
 from repo_search_utils.query_builder import GitHubRepoSearchQueryBuilder as QueryBuilder
+from tqdm.auto import tqdm
+from datasets import load_dataset
+from huggingface_hub import login
+
+
 
 GLOBAL_KEY = 0
 
@@ -110,6 +116,74 @@ def display_repo_information(src_df):
         with st.expander(f"Code Files ({programing_language}) - {code_filename}"):
             st.code(code_content, language=programing_language.lower(), line_numbers=True)
     return 
+
+
+def calc_avg_line_length(text):
+    lines = text.split('\n')
+    line_lengths = [len(line) for line in lines]
+    return sum(line_lengths) / len(line_lengths)
+
+def calc_max_line_length(text):
+    lines = text.split('\n')
+    line_lengths = [len(line) for line in lines]
+    return max(line_lengths)
+
+def calc_alphanum_fraction(text):
+    if len(text) == 0:
+        return 0
+    alphanum = sum(c.isalnum() for c in text)
+    return alphanum / len(text)
+
+def dataset_from_df(df):
+    dataset = {
+        'repo_name': [],
+        'repo_url': [],
+        'repo_description': [],
+        'repo_stars': [],
+        'repo_forks': [],
+        'repo_last_updated': [],
+        'repo_created_at': [],
+        'repo_size': [],
+        'repo_license': [],
+        'language': [],
+        'text': [],
+        'avg_line_length': [],
+        'max_line_length': [],
+        'alphnanum_fraction': [],
+    }
+    for i in tqdm(range(len(df))):
+        repo = df.iloc[i]
+        code = repo['code']
+        for programming_language in code:
+            code_files = code[programming_language]
+            for code_file in code_files:
+                text = code_files[code_file]
+                dataset['repo_name'].append(repo['name'])
+                dataset['repo_url'].append(repo['url'])
+                dataset['repo_description'].append(repo['description'])
+                dataset['repo_stars'].append(repo['stars'])
+                dataset['repo_forks'].append(repo['forks'])
+                dataset['repo_last_updated'].append(repo['last_updated'])
+                dataset['repo_created_at'].append(repo['created'])
+                dataset['repo_size'].append(repo['size'])
+                dataset['repo_license'].append(repo['license'])
+                dataset['language'].append(programming_language)
+                dataset['text'].append(text)
+                dataset['avg_line_length'].append(calc_avg_line_length(text))
+                dataset['max_line_length'].append(calc_max_line_length(text))
+                dataset['alphnanum_fraction'].append(calc_alphanum_fraction(text))
+    dataset = pd.DataFrame(dataset)
+    return dataset
+
+def huggingface_dataset_from_df(df):
+    dataset = dataset_from_df(df)
+    with open('hf_ds.pkl', 'wb') as f:
+        pickle.dump(dataset, f)
+    hf_dataset = load_dataset("pandas", data_files='hf_ds.pkl')
+    os.remove('hf_ds.pkl')
+    return hf_dataset
+
+
 
 
 
@@ -515,3 +589,55 @@ def browse_repo_info_app(k=0):
         st.write(f"curent row: {current_row} out of {len(df)-1}")
 
     display_repo_information(df)
+
+
+def upload_dataset_hugging_face(k=0):
+    GLOBAL_KEY = k
+    saved_searches = os.listdir("./saved_searches")
+    saved_searches = [x for x in saved_searches if x.endswith(".joblib")]
+    saved_searches.append('skip')
+    filename = st.selectbox('Select File', saved_searches, key=GLOBAL_KEY, index=len(saved_searches)-1)
+    if filename == 'skip':
+        return
+    GLOBAL_KEY += 1
+    filepath = f'./saved_searches/{filename}'
+    df = joblib.load(filepath)
+    with st.spinner("Creating Hugging Face Dataset..."):
+        st.write(df.head())
+        hf_dataset = huggingface_dataset_from_df(df)
+    
+    hf_token = st.text_input(
+        label='Hugging Face Token',
+        key=GLOBAL_KEY,
+        help='Token can be found in your Hugging Face profile page (https://huggingface.co/settings/tokens)',
+        type='password',
+        value='',
+    )
+    GLOBAL_KEY += 1
+
+    if hf_token != '':
+        try:
+            login(token=hf_token)
+            st.success("Logged in successfully")
+        except Exception as e:
+            st.error(f"Error logging in: {e}")
+            return
+        
+    upload_to_hub = st.button(
+        label="Upload To Hub",
+        key=GLOBAL_KEY,
+        use_container_width=True,
+        type='primary',
+        help='Press to upload the dataset to Hugging Face Hub',
+        disabled= hf_token == '',
+    )
+    GLOBAL_KEY += 1
+
+    if upload_to_hub:
+        try:
+            hf_dataset.push_to_hub(f"{filename.replace('.joblib', '')}_dataset")
+            st.success(f"Uploaded successfully with name: {filename.replace('.joblib', '')}_dataset")
+        except Exception as e:
+            st.error(f"Error uploading: {e}")
+            return
+
