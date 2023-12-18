@@ -61,9 +61,12 @@ def cache_search_results(query, max_results, t2):
     # utils.dump_data(cache_dict, cache_dict_file, driver='joblib')
     return df
 
-def get_repo_files(repo_name, branch = "master"):
+def get_repo_files(repo_name, branch = "master", github_token=None):
+    headers = {}
+    if github_token:
+        headers['Authorization'] = f"token {github_token}"
     url = f"https://api.github.com/repos/{repo_name}/git/trees/{branch}?recursive=1"
-    r = requests.get(url)
+    r = requests.get(url, headers = headers)
     st.text(r.status_code)
     if r.status_code == 200:
         res = r.json()
@@ -71,7 +74,7 @@ def get_repo_files(repo_name, branch = "master"):
         return files
     
     elif branch == "master":
-        files = get_repo_files(repo_name, branch = "main")
+        files = get_repo_files(repo_name, branch = "main", github_token = github_token)
         return files
 
     else:
@@ -471,7 +474,7 @@ def extract_code_fun(df, filename, t5, GLOBAL_KEY, k=0):
         repo_name = row['full_name']
         repo = repo_name
         # contents = get_repo_contents(g, repo)
-        contents = get_repo_files(repo)
+        contents = get_repo_files(repo, github_token = token)
         code_files_dict = {}
         code_files_bar = st.progress(0, text=f"Extracting Code Files From {repo}...")
         j = 0
