@@ -9,6 +9,98 @@ CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_MULTIPROCESSOR = 39
 CU_DEVICE_ATTRIBUTE_CLOCK_RATE = 13
 CU_DEVICE_ATTRIBUTE_MEMORY_CLOCK_RATE = 36
 
+# GPU Database containing the information about the most common GPUs.
+GPU_DATABASE ={
+    "NVIDIA GeForce GTX 1650": {
+        "Name": "NVIDIA GeForce GTX 1650",
+        "Compute Capability": "7.5",
+        "Multiprocessors": 14,
+        "CUDA Cores": 896,
+        "CUDA Architecture": "Turing",
+        "Ops per cycle": {
+            "FP64": 2,
+            "FP32": 64,
+            "FP16": 128,
+            "INT8": 256
+        },
+        "Concurrent threads": 14336,
+        "GPU clock": 1515.0,
+        "Memory clock": 6001.0,
+        "Total Memory (MiB)": 4095.6875,
+    },
+    "NVIDIA T4":{
+        "Name": "NVIDIA T4",
+        "Compute Capability": "7.5",
+        "Multiprocessors": 40,
+        "CUDA Cores": 2560,
+        "CUDA Architecture": "Turing",
+        "Ops per cycle": {
+            "FP64": 2,
+            "FP32": 64,
+            "FP16": 128,
+            "INT8": 256
+        },
+        "Concurrent threads": 40960,
+        "GPU clock": 1590.0,
+        "Memory clock": 5001.0,
+        "Total Memory (MiB)": 15102.0625,
+    },
+    "NVIDIA Tesla P100-PCIE-16GB":{
+        "Name": "NVIDIA Tesla P100-PCIE-16GB",
+        "Compute Capability": "6.0",
+        "Multiprocessors": 56,
+        "CUDA Cores": 3584,
+        "CUDA Architecture": "Pascal",
+        "Ops per cycle": {
+            "FP64": 32,
+            "FP32": 128,
+            "FP16": 256,
+            "INT8": 512
+        },
+        "Concurrent threads": 100352,
+        "GPU clock": 1328.0,
+        "Memory clock": 715.0,
+        "Total Memory (MiB)": 16276.0,
+    },
+    "NVIDIA Tesla V100-SXM2-16GB":{
+        "Name": "NVIDIA Tesla V100-SXM2-16GB",
+        "Compute Capability": "7.0",
+        "Multiprocessors": 80,
+        "CUDA Cores": 5120,
+        "CUDA Architecture": "Volta",
+        "Ops per cycle": {
+            "FP64": 2,
+            "FP32": 64,
+            "FP16": 128,
+            "INT8": 256
+        },
+        "Concurrent threads": 409600,
+        "GPU clock": 1530.0,
+        "Memory clock": 877.0,
+        "Total Memory (MiB)": 16130.0,
+    },
+    "NVIDIA A100-SXM4-40GB":{
+        "Name": "NVIDIA A100-SXM4-40GB",
+        "Compute Capability": "8.0",
+        "Multiprocessors": 108,
+        "CUDA Cores": 6912,
+        "CUDA Architecture": "Ampere",
+        "Ops per cycle": {
+            "FP64": 32,
+            "FP32": 128,
+            "FP16": 256,
+            "INT8": 512
+        },
+        "Concurrent threads": 746496,
+        "GPU clock": 1410.0,
+        "Memory clock": 1556.0,
+        "Total Memory (MiB)": 40536.0,
+    },
+}
+
+def list_common_gpus():
+    return list(GPU_DATABASE.keys())
+
 
 def ConvertSMVer2ArchName(major, minor):
     # Returns the name of a CUDA architecture given a device capability
@@ -89,7 +181,7 @@ def ConvertArchName2OpsPerSM(arch_name, precision):
     }.get((arch_name, precision), 0)
 
 
-def main():
+def main(verbose=True):
     info_dict = {}
     libnames = ('libcuda.so', 'libcuda.dylib', 'nvcuda.dll', 'cuda.dll')
     for libname in libnames:
@@ -127,30 +219,35 @@ def main():
         cuda.cuGetErrorString(result, ctypes.byref(error_str))
         print("cuDeviceGetCount failed with error code %d: %s" % (result, error_str.value.decode()))
         return 1
-    print("Found %d device(s)." % nGpus.value)
+    if verbose:
+        print("Found %d device(s)." % nGpus.value)
     for i in range(nGpus.value):
         result = cuda.cuDeviceGet(ctypes.byref(device), i)
         if result != CUDA_SUCCESS:
             cuda.cuGetErrorString(result, ctypes.byref(error_str))
             print("cuDeviceGet failed with error code %d: %s" % (result, error_str.value.decode()))
             return 1
-        print("Device: %d" % i)
+        if verbose:
+            print("Device: %d" % i)
         info_dict[f'device_{i}'] = {}
         if cuda.cuDeviceGetName(ctypes.c_char_p(name), len(name), device) == CUDA_SUCCESS:
             device_name = name.split(b'\0', 1)[0].decode()
-            print("  Name: %s" % device_name)
+            if verbose:
+                print("  Name: %s" % device_name)
             info_dict[f'device_{i}']['Name'] = device_name
         if cuda.cuDeviceComputeCapability(ctypes.byref(cc_major), ctypes.byref(cc_minor), device) == CUDA_SUCCESS:
             compute_capability = f'{cc_major.value}.{cc_minor.value}'
-            print("  Compute Capability: %s" % compute_capability)
+            if verbose:
+                print("  Compute Capability: %s" % compute_capability)
             info_dict[f'device_{i}']['Compute Capability'] = compute_capability
         if cuda.cuDeviceGetAttribute(ctypes.byref(cores), CU_DEVICE_ATTRIBUTE_MULTIPROCESSOR_COUNT, device) == CUDA_SUCCESS:
             multiprocessors = cores.value
             cuda_cores = cores.value * ConvertSMVer2Cores(cc_major.value, cc_minor.value)
             cuda_arch = ConvertSMVer2ArchName(cc_major.value, cc_minor.value)
-            print("  Multiprocessors: %d" % multiprocessors)
-            print("  CUDA Cores: %s" % (cuda_cores or "unknown"))
-            print("  CUDA Architecture: %s" % cuda_arch)
+            if verbose:
+                print("  Multiprocessors: %d" % multiprocessors)
+                print("  CUDA Cores: %s" % (cuda_cores or "unknown"))
+                print("  CUDA Architecture: %s" % cuda_arch)
             info_dict[f'device_{i}']['Multiprocessors'] = multiprocessors
             info_dict[f'device_{i}']['CUDA Cores'] = cuda_cores
             info_dict[f'device_{i}']['CUDA Architecture'] = cuda_arch
@@ -159,22 +256,26 @@ def main():
             info_dict[f'device_{i}']['Ops per cycle'] = {}
             for precision in presicions:
                 ops_per_cycle = ConvertArchName2OpsPerSM(cuda_arch, precision)
-                print(f"  {precision} ops per cycle: {ops_per_cycle}")
+                if verbose:
+                    print(f"  {precision} ops per cycle: {ops_per_cycle}")
                 info_dict[f'device_{i}']['Ops per cycle'][precision] = ops_per_cycle
 
                 
 
             if cuda.cuDeviceGetAttribute(ctypes.byref(threads_per_core), CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_MULTIPROCESSOR, device) == CUDA_SUCCESS:
                 concurrrent_threads = cores.value * threads_per_core.value
-                print("  Concurrent threads: %d" % concurrrent_threads)
+                if verbose:
+                    print("  Concurrent threads: %d" % concurrrent_threads)
                 info_dict[f'device_{i}']['Concurrent threads'] = concurrrent_threads
         if cuda.cuDeviceGetAttribute(ctypes.byref(clockrate), CU_DEVICE_ATTRIBUTE_CLOCK_RATE, device) == CUDA_SUCCESS:
             gpu_clockrate = clockrate.value / 1000.
-            print("  GPU clock: %g MHz" % gpu_clockrate)
+            if verbose:
+                print("  GPU clock: %g MHz" % gpu_clockrate)
             info_dict[f'device_{i}']['GPU clock'] = gpu_clockrate
         if cuda.cuDeviceGetAttribute(ctypes.byref(clockrate), CU_DEVICE_ATTRIBUTE_MEMORY_CLOCK_RATE, device) == CUDA_SUCCESS:
             memory_clockrate = clockrate.value / 1000.
-            print("  Memory clock: %g MHz" % memory_clockrate)
+            if verbose:
+                print("  Memory clock: %g MHz" % memory_clockrate)
             info_dict[f'device_{i}']['Memory clock'] = memory_clockrate
         try:
             result = cuda.cuCtxCreate_v2(ctypes.byref(context), 0, device)
@@ -191,10 +292,11 @@ def main():
             if result == CUDA_SUCCESS:
                 total_memory = totalMem.value / 1024**2
                 free_memory = freeMem.value / 1024**2
-                print("  Total Memory: %ld MiB" % total_memory)
-                print("  Free Memory: %ld MiB" % free_memory)
+                if verbose:
+                    print("  Total Memory: %ld MiB" % total_memory)
+                    print("  Free Memory: %ld MiB" % free_memory)
                 info_dict[f'device_{i}']['Total Memory (MiB)'] = total_memory
-                info_dict[f'device_{i}']['Free Memory (MiB)'] = free_memory
+                # info_dict[f'device_{i}']['Free Memory (MiB)'] = free_memory
             else:
                 cuda.cuGetErrorString(result, ctypes.byref(error_str))
                 print("cuMemGetInfo failed with error code %d: %s" % (result, error_str.value.decode()))
@@ -217,6 +319,15 @@ def gpu_flops(gpu_info, precision=1):
     flops = clock_rate * cores * flops_per_clock_cycle * precision
     tera_flops = flops/1000**4
     return tera_flops
+
+def custome_gpu_info(gpu_name):
+    if gpu_name in GPU_DATABASE:
+        return GPU_DATABASE[gpu_name]
+    else:
+        print(f'GPU {gpu_name} not found in database')
+        return None
+    
+    
 
 if __name__=="__main__":
     sys.exit(main())
