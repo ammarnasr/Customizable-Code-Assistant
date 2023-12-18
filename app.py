@@ -10,20 +10,22 @@ st.markdown(
     """
 )
 
-tab1, tab2, tab3, tab4 = st.tabs(["Search Repos", "Extract Code", "Browse Repos", "Upload Dataset to Hugging Face"])
+# tab1, tab2, tab3, tab4 = st.tabs(["Search Repos", "Extract Code", "Browse Repos", "Upload Dataset to Hugging Face"])
+# tab1 = st.tabs(["Search Repos"])
 
-with tab1:
-    # st.write("")
-    fetch_repos_app(0)
+# with tab1:
+#     # st.write("")
+    # fetch_repos_app(0)
+# with tab2:
+#     # st.write("")
+#     extract_code_app(100)
 
-with tab2:
-    # st.write("")
-    extract_code_app(100)
+# with tab3:
+#     # st.write("")
+#     browse_repo_info_app(200)
 
-with tab3:
-    # st.write("")
-    browse_repo_info_app(200)
+# with tab4:
+#     st.write("")
+#     upload_dataset_hugging_face(300)
 
-with tab4:
-    st.write("")
-    upload_dataset_hugging_face(300)
+fetch_repos_app(0)

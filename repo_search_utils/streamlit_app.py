@@ -1,5 +1,6 @@
 import os
 import utils
+import base64
 import pickle
 import joblib
 import datetime
@@ -12,6 +13,7 @@ from repo_search_utils.query_builder import GitHubRepoSearchQueryBuilder as Quer
 from tqdm.auto import tqdm
 from datasets import load_dataset
 from huggingface_hub import login
+from github import Github, Auth
 
 
 
@@ -26,33 +28,54 @@ def load_cached_searches():
         cache_dict = {}
     return cache_dict, cache_dict_file
 
-def call_github_api(query, max_results):
-    g = gs.authenticate()
-    result = gs.search_repos(g, query)
-    repos = []
-    my_bar = st.progress(0)
-    i = 0
-    with st.spinner('Searching...'):
-        for repo in result[:max_results]:
-            repo = gs.extract_repo_info(repo)
-            repos.append(repo)
-            i += 1
-            my_bar.progress(i/max_results)
-    df = pd.DataFrame(repos)
+def call_github_api(query, max_results, t2):
+    token = gs.authenticate()
+    # with st.spinner('Searching...'):
+    num_pages = max_results//30
+    if max_results % 30 > 0:
+        num_pages += 1
+
+    outputs = []
+    for page in range(num_pages):
+        repos = gs.get_repos_in_page(page, token, query)
+        if repos:
+            outputs.extend(repos)
+        # st.spinner(f'Searching:{len(outputs)}')
+        t2.markdown(f'fetching repositories: :green[{min(len(outputs), max_results)}]')
+    # result = gs.search_repos(token, query, num_pages)
+    outputs = outputs[:max_results]
+    repos_df = gs.extract_repo_info(outputs)
+
+    return repos_df
+
+def cache_search_results(query, max_results, t2):
+    # cache_dict, cache_dict_file = load_cached_searches()
+    # if query in cache_dict:
+    #     if max_results in cache_dict[query]:
+    #         st.write("Already in cache")
+    #         return cache_dict[query][max_results]
+    df = call_github_api(query, max_results, t2)
+    # if query not in cache_dict:
+    #     cache_dict[query] = {}
+    # cache_dict[query][max_results] = df
+    # utils.dump_data(cache_dict, cache_dict_file, driver='joblib')
     return df
 
-def cache_search_results(query, max_results):
-    cache_dict, cache_dict_file = load_cached_searches()
-    if query in cache_dict:
-        if max_results in cache_dict[query]:
-            st.write("Already in cache")
-            return cache_dict[query][max_results]
-    df = call_github_api(query, max_results)
-    if query not in cache_dict:
-        cache_dict[query] = {}
-    cache_dict[query][max_results] = df
-    utils.dump_data(cache_dict, cache_dict_file, driver='joblib')
-    return df
+def get_repo_files(repo_name, branch = "master"):
+    url = f"https://api.github.com/repos/{repo_name}/git/trees/{branch}?recursive=1"
+    r = requests.get(url)
+    if r.status_code == 200:
+        res = r.json()
+        files = [file["path"] for file in res["tree"]]
+        return files
+    
+    elif branch == "master":
+        files = get_repo_files(repo_name, branch = "main")
+        return files
+
+    else:
+        return None
+
 
 def get_repo_contents(g, repo_name):
     final_contents = []
@@ -91,6 +114,24 @@ def get_code_contents(file):
     except Exception as e:
         print(f"Error getting raw content for {file.name}: {e}")
         return []
+    
+def github_read_file(full_name, file_path, github_token=None):
+    headers = {}
+    if github_token:
+        headers['Authorization'] = f"token {github_token}"
+        
+    url = f'https://api.github.com/repos/{full_name}/contents/{file_path}'
+    r = requests.get(url, headers=headers)
+    r.raise_for_status()
+    data = r.json()
+    try:
+      file_content = data['content']
+      file_content_encoding = data.get('encoding')
+      if file_content_encoding == 'base64':
+          file_content = base64.b64decode(file_content).decode()
+      return file_content
+    except:
+      pass
 
 def display_repo_information(src_df):
     target_row = st.session_state['current_browse_row']
@@ -237,7 +278,7 @@ def fetch_repos_app(k=0):
             topic, GLOBAL_KEY = search_params.repo_topic(GLOBAL_KEY)
         with st.expander('License'):
             license, GLOBAL_KEY = search_params.repo_license(GLOBAL_KEY)
-    st.markdown('---')
+    # st.markdown('---')
 
     st.markdown("Enter the max number of results to fetch (0-1000, default=100)")
     max_results = st.number_input(
@@ -250,44 +291,44 @@ def fetch_repos_app(k=0):
         help='Enter the max number of results to fetch (0-1000, default=100)'
     )
     GLOBAL_KEY += 1
-    st.markdown('---')
+    # st.markdown('---')
 
-    st.markdown("Enter the filename to save the results to (default=:orange[SearchTerm]_:blue[MaxResults].csv)")
-    filename = st.text_input('Filename', f'{search_term}_{max_results}.csv', key=GLOBAL_KEY)
-    GLOBAL_KEY += 1
-    st.markdown('---')
+    # st.markdown("Enter the filename to save the results to (default=:orange[SearchTerm]_:blue[MaxResults].csv)")
+    # # filename = st.text_input('Filename', f'{search_term}_{max_results}.csv', key=GLOBAL_KEY)
+    # GLOBAL_KEY += 1
+    # st.markdown('---')
 
-    _, center_col, _ = st.columns([6,3,6])
-    with center_col:
-        build_query = st.button(
-            label='Build Query',
-            help='Press to build the query (Must Write the Search Term First)',
-            key=GLOBAL_KEY,
-            use_container_width=True,
-            type='primary',
-            disabled= search_term == ''
-        )
-        GLOBAL_KEY += 1
+    # _, center_col, _ = st.columns([6,3,6])
+    # with center_col:
+    #     build_query = st.button(
+    #         label='Build Query',
+    #         help='Press to build the query (Must Write the Search Term First)',
+    #         key=GLOBAL_KEY,
+    #         use_container_width=True,
+    #         type='primary',
+    #         disabled= search_term == ''
+    #     )
+    #     GLOBAL_KEY += 1
 
-    if build_query:
-        qb_obj = QueryBuilder()
-        query_args = search_params.get_query_args(name, description, readme, topics, owner, repo_name, user,
-                                    min_size, max_size, min_forks, max_forks, min_stars, max_stars,
-                                    min_created, max_created, language, topic, license)
-        query_args['value'] = search_term
-        qb_obj.init_from_args(query_args)
-        query = qb_obj.build()
-        st.session_state['query'] = query
-        st.session_state['query_params'] = qb_obj.query_params
-        st.session_state['max_results'] = max_results
-        st.session_state['filename'] = filename
+    # if build_query:
+    #     qb_obj = QueryBuilder()
+    #     query_args = search_params.get_query_args(name, description, readme, topics, owner, repo_name, user,
+    #                                 min_size, max_size, min_forks, max_forks, min_stars, max_stars,
+    #                                 min_created, max_created, language, topic, license)
+    #     query_args['value'] = search_term
+    #     qb_obj.init_from_args(query_args)
+    #     query = qb_obj.build()
+    #     st.session_state['query'] = query
+    #     st.session_state['query_params'] = qb_obj.query_params
+    #     st.session_state['max_results'] = max_results
+    #     st.session_state['filename'] = filename
 
-    query, query_params, max_results, filename = st.session_state['query'], st.session_state['query_params'], st.session_state['max_results'], st.session_state['filename']
+    # query, query_params, max_results, filename = st.session_state['query'], st.session_state['query_params'], st.session_state['max_results'], st.session_state['filename']
     
 
     st.markdown("---")
     st.markdown("#### Search Results")
-    st.markdown("Press the button to search, after query is built")
+    st.markdown("Press the button to search repositories")
     _, center_col, _ = st.columns([6,3,6])
     with center_col:
         search = st.button(
@@ -295,20 +336,175 @@ def fetch_repos_app(k=0):
             key=GLOBAL_KEY,
             use_container_width=True,
             type='primary',
-            disabled= build_query == False,
+            # disabled= build_query == False,
             help='Press to search, after query is built'
         )
     GLOBAL_KEY += 1
     if search:
-        query = st.session_state['query']
-        df = cache_search_results(query, max_results)
-        st.table(df.head(10))
-        filepath = f'./saved_searches/{filename}'
-        save_dir = './saved_searches'
-        if not os.path.exists(save_dir):
-            os.makedirs(save_dir)
-        df.to_csv(filepath, index=False)
-        st.success(f"Saved to {filepath}")
+        t1 = st.empty()
+        t2 = st.empty()
+        t3 = st.empty()
+        t4 = st.empty()
+        t5 = st.empty()
+        t6 = st.empty()
+        with st.spinner('Searching...'):
+            filename = f'{search_term}_{max_results}.csv'
+            #build query
+            t1.markdown("building query...")
+            qb_obj = QueryBuilder()
+            query_args = search_params.get_query_args(name, description, readme, topics, owner, repo_name, user,
+                                        min_size, max_size, min_forks, max_forks, min_stars, max_stars,
+                                        min_created, max_created, language, topic, license)
+            query_args['value'] = search_term
+            qb_obj.init_from_args(query_args)
+            query = qb_obj.build()
+            st.session_state['query'] = query
+            st.session_state['query_params'] = qb_obj.query_params
+            st.session_state['max_results'] = max_results
+            st.session_state['filename'] = filename
+            query = st.session_state['query']
+            query, query_params, max_results, filename = st.session_state['query'], st.session_state['query_params'], st.session_state['max_results'], st.session_state['filename']
+            t1.markdown("building query finished")
+            GLOBAL_KEY += 1
+
+            df = cache_search_results(query, max_results, t2)
+            # st.table(df.head(10))
+            # filepath = f'./saved_searches/{filename}'
+            # save_dir = './saved_searches'
+            # if not os.path.exists(save_dir):
+            #     os.makedirs(save_dir)
+            # df.to_csv(filepath, index=False)
+            # st.success(f"Saved to {filepath}")
+            t3.download_button(
+                label="Download repositories info as CSV",
+                data= df.to_csv().encode('utf-8'),
+                file_name= filename,
+                key=GLOBAL_KEY,
+                mime='text/csv',
+            )
+            GLOBAL_KEY += 1
+            t4.markdown("extracting code from repos...")
+            GLOBAL_KEY += 1
+            extract_code_fun(df, filename, t5, GLOBAL_KEY)
+
+def extract_code_fun(df, filename, t5, GLOBAL_KEY, k=0):
+    code_extensions_coulmn_name_dict = {
+        'py': 'Python',
+        'ipynb': 'Python',
+        'rmd': 'R',
+        'r': 'R',
+        'scala': 'Scala',
+        'java': 'Java',
+        'js': 'JavaScript',
+        'go': 'Go',
+
+        'c': 'C',
+        'cpp': 'C++',
+        'cs': 'C#',
+
+
+        'html': 'HTML',
+        'css': 'CSS',
+        'php': 'PHP',
+
+        'rb': 'Ruby',
+        'pl': 'Perl',
+        'jl': 'Julia',
+        'kt': 'Kotlin',
+        'swift': 'Swift',
+        'vb': 'Visual Basic',
+        'vba': 'Visual Basic',
+        'vbnet': 'Visual Basic',
+        'vb.net': 'Visual Basic',
+        'ts': 'TypeScript',
+        'tsx': 'TypeScript',
+        'jsx': 'JavaScript',
+        'tsx': 'TypeScript',
+        'dart': 'Dart',
+        'lua': 'Lua',
+        'sh': 'Shell',
+        'bash': 'Shell',
+        'ps1': 'PowerShell',
+        'psm1': 'PowerShell',
+        'psd1': 'PowerShell',
+        'ps1xml': 'PowerShell',
+        'psc1': 'PowerShell',
+        'psrc': 'PowerShell',
+        'pp': 'Pascal',
+        'pas': 'Pascal',
+        'pl': 'Perl',
+        'pm': 'Perl',
+        't': 'Perl',
+        'pod': 'Perl',
+        
+
+        'sql': 'SQL',
+        'sh': 'Shell',
+        'json': 'JSON',
+        'xml': 'XML',
+        'yml': 'YAML',
+        'yaml': 'YAML',
+        'md': 'Markdown',
+        'txt': 'Text',
+        'cfg': 'Config',
+        'ini': 'Config',
+        'conf': 'Config',
+        'cfg': 'Config',
+        'gitignore': 'Config',
+        'gitattributes': 'Config',
+        'gitmodules': 'Config',
+        'gitkeep': 'Config',
+        'gitconfig': 'Config',
+        'git': 'Config',
+    }
+    extracted_filename = filename.replace(".csv", "_with_code.joblib")
+    token = gs.authenticate()
+    # auth = Auth.Token(token)
+    # g = Github(auth=auth)
+    repos_bar = st.progress(0, text="Extracting Code Files From Repos...")
+    repos_bar_max = len(df)
+    i = 0
+    all_contents = []
+    # with st.spinner('Extracting Code Files From Repos...'):
+    for _, row in df.iterrows():
+        repo_name = row['full_name']
+        repo = repo_name
+        # contents = get_repo_contents(g, repo)
+        contents = get_repo_files(repo)
+        code_files_dict = {}
+        code_files_bar = st.progress(0, text=f"Extracting Code Files From {repo}...")
+        j = 0
+        code_files_bar_max = len(contents)
+        for code_filepath in contents:
+            # code_filename = code_file.name
+            ext = code_filepath.split('.')[-1]
+            if ext not in code_extensions_coulmn_name_dict:
+                programing_language = 'Misc'
+            else:
+                programing_language = code_extensions_coulmn_name_dict[ext]
+            # raw_content = get_code_contents(code_file)
+            raw_content = github_read_file(repo_name, code_filepath, github_token=token)
+            if programing_language not in code_files_dict:
+                code_files_dict[programing_language] = {}
+            code_files_dict[programing_language][code_filepath] = raw_content
+            j += 1
+            code_files_bar.progress(j/code_files_bar_max, text=f"Processed {j} of {code_files_bar_max} files in repo :blue[{repo}]")
+        i += 1
+        repos_bar.progress(i/repos_bar_max, text=f"Ectracted {i} of {repos_bar_max} repos")
+        all_contents.append(code_files_dict)
+    df['code'] = all_contents
+
+    # utils.dump_data(df, f'./saved_searches/{extracted_filename}', driver='joblib')
+    st.download_button(
+                label="Download Data as CSV",
+                data= df.to_csv().encode('utf-8'),
+                file_name= filename,
+                key=GLOBAL_KEY,
+                mime='text/csv',
+                
+    )
+    GLOBAL_KEY += 1
+    st.success(f"Finished")
 
 
 def extract_code_app(k=0):
@@ -393,6 +589,7 @@ def extract_code_app(k=0):
         type='primary',
         help='Press to extract code, after selecting a file'
     )
+
     GLOBAL_KEY += 1
     if extract:
         filepath = f'./saved_searches/{filename}'
