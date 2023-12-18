@@ -67,7 +67,6 @@ def get_repo_files(repo_name, branch = "master", github_token=None):
         headers['Authorization'] = f"token {github_token}"
     url = f"https://api.github.com/repos/{repo_name}/git/trees/{branch}?recursive=1"
     r = requests.get(url, headers = headers)
-    st.text(r.status_code)
     if r.status_code == 200:
         res = r.json()
         files = [file["path"] for file in res["tree"]]
