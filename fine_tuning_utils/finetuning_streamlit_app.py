@@ -102,7 +102,7 @@ def compare_two_common_gpus(k=0):
         st.write(cuda_utils.custome_gpu_info(second_common_device))
 
 def code_llms_info(k=0):
-    code_llms_df = pd.read_csv('llms_info.csv')
+    code_llms_df = pd.read_csv('./fine_tuning_utils/llms_info.csv')
     models = code_llms_df['Model'].unique()
     #Let the user select a model
     selected_model = st.selectbox(
@@ -132,7 +132,7 @@ def code_llms_info(k=0):
     st.write(model_info)
 
 def compare_llms_models(k=0):
-    code_llms_df = pd.read_csv('llms_info.csv')
+    code_llms_df = pd.read_csv('./fine_tuning_utils/llms_info.csv')
     models = code_llms_df['Model'].unique()
     col1, col2 = st.columns([1,1])
     with col1:
@@ -181,7 +181,7 @@ def number_of_tokens_estimator(dataset_size):
 
 
 def code_datasets_info(k=0):
-    code_datasets_df = pd.read_csv('code_datasets.csv')
+    code_datasets_df = pd.read_csv('./fine_tuning_utils/code_datasets.csv')
     datasets = code_datasets_df['Dataset'].unique()
     #Let the user select a dataset
     selected_dataset = st.selectbox(
@@ -207,7 +207,7 @@ def code_datasets_info(k=0):
     st.write(dataset_info)
 
 def compare_code_datasets(k=0):
-    code_datasets_df = pd.read_csv('code_datasets.csv')
+    code_datasets_df = pd.read_csv('./fine_tuning_utils/code_datasets.csv')
     datasets = code_datasets_df['Dataset'].unique()
     col1, col2 = st.columns([1,1])
     with col1:
@@ -297,7 +297,7 @@ def calculate_tao_for_gpu_precision(k=0):
 
 def calcualte_model_parameters(k=0):
     #Let the user select a model or enter the number of parameters manually
-    code_llms_df = pd.read_csv('llms_info.csv')
+    code_llms_df = pd.read_csv('./fine_tuning_utils/llms_info.csv')
     models = code_llms_df['Model'].unique()
 
     st.info(f" You can select a model or enter the number of parameters manually.")
@@ -355,7 +355,7 @@ def calcualte_model_parameters(k=0):
 
 def calculate_dataset_size(k=0):
     #Let the user select a dataset or enter the dataset size manually
-    code_datasets_df = pd.read_csv('code_datasets.csv')
+    code_datasets_df = pd.read_csv('./fine_tuning_utils/code_datasets.csv')
     datasets = code_datasets_df['Dataset'].unique()
 
     add_dataset_size_manually = st.checkbox(
@@ -421,7 +421,6 @@ def calculate_training_time(k=0):
 
 
 def main():
-    st.set_page_config(layout='wide')
     st.markdown("<h1 style='text-align: center; color: Tomato;'>Compute Optimal LLMs Training</h1>", unsafe_allow_html=True)
     add_local_gpu_info()
     

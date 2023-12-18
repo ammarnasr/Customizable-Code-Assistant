@@ -2,6 +2,8 @@ import streamlit as st
 from repo_search_utils.streamlit_app import fetch_repos_app, extract_code_app, browse_repo_info_app, upload_dataset_hugging_face
 from fine_tuning_utils.finetuning_streamlit_app import main
 
+st.set_page_config(layout='wide')
+
 st.title("Customizable Code Assistant")
 
 st.markdown(
@@ -30,6 +32,7 @@ st.markdown(
 
 
 tab1, tab2 = st.tabs(["Milestone 1", "Milestone 2"])
+
 
 with tab1:
     fetch_repos_app(10000)
