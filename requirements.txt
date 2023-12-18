@@ -9,5 +9,3 @@ datasets
 huggingface_hub
 plotly
 torch
-torchvision
-torchaudio

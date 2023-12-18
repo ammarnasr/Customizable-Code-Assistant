@@ -29,7 +29,7 @@ st.markdown(
 #     upload_dataset_hugging_face(300)
 
 
-tab1, tab2 = st.tabs = ["Milestone 1", "Milestone 2"]
+tab1, tab2 = st.tabs(["Milestone 1", "Milestone 2"])
 
 with tab1:
     fetch_repos_app(10000)
