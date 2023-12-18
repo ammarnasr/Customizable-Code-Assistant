@@ -261,6 +261,7 @@ def calculate_tao_for_gpu_precision(k=0):
         all_devices = list(local_devices) + common_devices
     else:
         all_devices = common_devices
+        local_devices = []
     #Let the user select gpu devices setup
     selected_devices = st.multiselect(
         'Select GPU devices setup:',
