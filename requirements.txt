@@ -7,3 +7,6 @@ joblib
 transformers
 datasets
 huggingface_hub
+plotly
+torch
+torchvision
