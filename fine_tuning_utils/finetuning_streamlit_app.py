@@ -254,10 +254,13 @@ def Calculate_throughput(gpu_info, precision=1):
 
 
 def calculate_tao_for_gpu_precision(k=0):
-    local_cuda_info = st.session_state['local_cuda_info']
-    local_devices = local_cuda_info.keys()
     common_devices = cuda_utils.list_common_gpus()
-    all_devices = list(local_devices) + common_devices
+    if 'local_cuda_info' in st.session_state:
+        local_cuda_info = st.session_state['local_cuda_info']
+        local_devices = local_cuda_info.keys()
+        all_devices = list(local_devices) + common_devices
+    else:
+        all_devices = common_devices
     #Let the user select gpu devices setup
     selected_devices = st.multiselect(
         'Select GPU devices setup:',
