@@ -64,6 +64,7 @@ def cache_search_results(query, max_results, t2):
 def get_repo_files(repo_name, branch = "master"):
     url = f"https://api.github.com/repos/{repo_name}/git/trees/{branch}?recursive=1"
     r = requests.get(url)
+    st.write(r.status_code)
     if r.status_code == 200:
         res = r.json()
         files = [file["path"] for file in res["tree"]]
