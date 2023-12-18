@@ -1,5 +1,5 @@
 import streamlit as st
-import cuda_utils
+from fine_tuning_utils import cuda_utils
 import torch
 import pandas as pd
 import plotly.graph_objects as go
