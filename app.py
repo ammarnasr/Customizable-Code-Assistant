@@ -1,6 +1,7 @@
 import streamlit as st
 from repo_search_utils.streamlit_app import fetch_repos_app, extract_code_app, browse_repo_info_app, upload_dataset_hugging_face
 from fine_tuning_utils.finetuning_streamlit_app import main
+from training_report import report_streamlit_app
 
 st.set_page_config(layout='wide')
 
@@ -31,7 +32,7 @@ st.markdown(
 #     upload_dataset_hugging_face(300)
 
 
-tab1, tab2 = st.tabs(["Milestone 1", "Milestone 2"])
+tab1, tab2, tab3 = st.tabs(["Milestone 1", "Milestone 2", "Milestone 3"])
 
 
 with tab1:
@@ -39,3 +40,6 @@ with tab1:
 
 with tab2:
     main()
+
+with tab3:
+    report_streamlit_app.main(2000)
