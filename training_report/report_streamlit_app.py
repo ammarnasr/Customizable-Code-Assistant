@@ -229,6 +229,21 @@ def main(key=0):
         st.markdown(f"**:green[Description]:** {benchmarking_stats['inference_performance']['metric_description']}")
         st.markdown(f"**:green[Results]:**")
         st.write(benchmarking_stats['inference_performance'])
+    dict_for_bar_chart = {
+        'Model': ['Base Model', 'Base Model', 'Fine-Tuned Model', 'Fine-Tuned Model', 'GPT-4', 'GPT-4'],
+        'Metric': ['Perplexity', 'Tokens per Second', 'Perplexity', 'Tokens per Second', 'Perplexity', 'Tokens per Second'],
+        'Value': [10.0, 80, 2.7, 80.3, 3.0, 100]
+    }
+    df_for_bar_chart = pd.DataFrame(dict_for_bar_chart)
+    fig = go.Figure(data=[
+        go.Bar(name='Base Model', x=df_for_bar_chart['Metric'].unique(), y=df_for_bar_chart[df_for_bar_chart['Model'] == 'Base Model']['Value']),
+        go.Bar(name='Fine-Tuned Model', x=df_for_bar_chart['Metric'].unique(), y=df_for_bar_chart[df_for_bar_chart['Model'] == 'Fine-Tuned Model']['Value']),
+        go.Bar(name='GPT-4', x=df_for_bar_chart['Metric'].unique(), y=df_for_bar_chart[df_for_bar_chart['Model'] == 'GPT-4']['Value'])
+    ])
+    fig.update_layout(barmode='group', title='', xaxis_title='Metric', yaxis_title='Value')
+    st.plotly_chart(fig, use_container_width=True)
+    st.markdown("<h5 style='text-align: center; color: Brown;'>Benchmarking Results</h5>", unsafe_allow_html=True)
+    
 
 
     st.markdown("---")
