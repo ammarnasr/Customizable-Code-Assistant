@@ -25,44 +25,12 @@ This repo contains:
 - An open-source API for accessing the models
 - Tools and documentation for private local fine-tuning
 
-## Getting Started
-
-### Prerequisites
-
-- Python 3.6+
-- PyTorch 1.3+
-- Transformers 4.0+
-
-### Installation
-
-Clone this repository:
-
-```
-git clone https://github.com/enigmainc/accessible-code-llms.git
-```
-
-Install dependencies:
-
-```
-pip install -r requirements.txt
-```
-
-### Using the Models
-
-- The trained models can be found in the `models` folder
-- Example notebooks for using the models are in the `notebooks` folder 
-- The open-source API is in the `api` folder
-
 ## Contributors
 
-- [Ammar Khairi](https://github.com/ammarkhairi)
-- [Mukhtar Mohammed](https://github.com/mukhtarmohammed) 
-- [Muhammed Saeed](https://github.com/msaeed)
+- [Ammar Khairi](https://github.com/ammarnasr)
+- [Mukhtar Mohammed](https://github.com/mukhtar-algezoli) 
+- [Muhammed Saeed](https://github.com/muhammed-saeed)
 
 ## License
 
 This project is licensed under the MIT license. See [LICENSE](LICENSE) for more details.
-
-## References
-
-Relevant papers, reports, and other materials related to this project. 
