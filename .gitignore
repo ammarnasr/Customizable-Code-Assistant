@@ -5,7 +5,7 @@ presentation/*
 wandb/*
 events.*
 wandb/run*
-fine_tuning_utils/wandb/run-20231206_145923-ozlxdrj1/files
+fine_tuning_utils/wandb
 
 
 
