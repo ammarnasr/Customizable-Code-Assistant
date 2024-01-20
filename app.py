@@ -3,7 +3,7 @@ from repo_search_utils.streamlit_app import fetch_repos_app, extract_code_app, b
 from fine_tuning_utils.finetuning_streamlit_app import main
 from training_report import report_streamlit_app
 
-st.set_page_config(layout='wide')
+st.set_page_config(layout='wide', initial_sidebar_state='collapsed', page_title='Customizable Code Assistant', page_icon=':robot_face:')
 
 st.title("Customizable Code Assistant")
 
