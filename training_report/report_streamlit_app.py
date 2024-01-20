@@ -173,38 +173,6 @@ def get_benchmarking_statistics():
     return benchmarking_statistics
 
 
-def get_code_samples():
-    code_samples = {
-        'base': {
-            'code_sample_1': {
-                'code': '''
-                def pentest():
-                '''
-            },
-            'code_sample_2': {
-                'code': '''
-                def sql_injection():
-                '''
-            },
-        },
-        'finetuned': {
-            'code_sample_1': {
-                'code': '''
-                def pentest():
-                    return True
-                '''
-        },
-        'code_sample_2': {
-            'code': '''
-            def sql_injection():
-                return True
-            '''
-        },
-    }
-    }
-    return code_samples
-
-
 
 
 
@@ -407,22 +375,5 @@ def main(key=0):
         st.plotly_chart(fig, use_container_width=True)
         
     
-
-
-    # st.markdown("---")
-
-    # st.markdown("<h2 style='text-align: center; color: Tomato;'>Code Samples</h2>", unsafe_allow_html=True)
-    # code_samples = get_code_samples()
-    # col1, col2 = st.columns(2)
-    # with col1:
-    #     st.markdown("<h5 style='text-align: left; color: LightPink;'>Base Model Code Samples</h5>", unsafe_allow_html=True)
-    #     st.code(code_samples['base']['code_sample_1']['code'], language='python')
-    #     st.code(code_samples['base']['code_sample_2']['code'], language='python')
-    # with col2:
-    #     st.markdown("<h5 style='text-align: left; color: LightPink;'>Fine-Tuned Model Code Samples</h5>", unsafe_allow_html=True)
-    #     st.code(code_samples['finetuned']['code_sample_1']['code'], language='python')
-    #     st.code(code_samples['finetuned']['code_sample_2']['code'], language='python')
-    
-
 if __name__ == '__main__':
     main()
