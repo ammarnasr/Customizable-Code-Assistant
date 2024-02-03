@@ -335,4 +335,4 @@ def fetch_repos(token, max_results, filename, search_term,args={}):
 
 
 if __name__ == "__main__":
-    fetch_repos(token='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', max_results=1, filename='test.csv', search_term='pentest')
+    fetch_repos(token='', max_results=1, filename='test.csv', search_term='pentest')
