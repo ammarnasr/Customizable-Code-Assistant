@@ -174,4 +174,7 @@ cython_debug/
 #.idea/
 .streamlit/secrets.toml
 
+# Ignore all csv, joblib, and notebook files
+*.csv
+*.joblib
 *.ipynb
