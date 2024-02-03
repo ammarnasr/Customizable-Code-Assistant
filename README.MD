@@ -1,36 +1,59 @@
-# Accessible Code LLMs
+# enigma_ai
 
-![](images/banner.png)
+enigma_ai is a python package for efficiently finetuning large language models (LLMs) like GPT-3 for code generation. 
 
-This repository contains the code and models for the Accessible Code LLMs project proposed by Enigma AI. 
+## Features
+- GitHub code scraper
+    - Scrape quality code from GitHub based on parameters like stars, size, topics etc. to create a clean dataset for finetuning
+    - Customizable to scrape code in specific languages, code styles etc.  
+- Optimization tools
+    - Find optimal hyperparameters like learning rate, batch size etc for your model and dataset to get best results
+    - Supports major LLMs like GPT-3, Codex and more
+    - Tunes hyperparameters based on compute constraints and desired loss function
+- Easy finetuning
+    - Simple wrapper around HuggingFace and Lorå to finetune LLMs on your dataset
+    - Seamless integration, trains models out-of-the-box on your GPU/TPU
 
-## About
+## Installation
 
-The goal of this project is to make large language models for code more accessible by addressing the high computational training costs and privacy concerns associated with using pretrained models. 
+```
+pip install enigma_ai
+```
 
-We aim to do this through:
+## Usage
 
-- Collecting high-quality, task-specific training data to lower the amount of data needed for fine-tuning
-- Exploring smaller model architectures that can achieve good performance on specialized tasks
-- Providing an open-source API with options for privacy-preserving local fine-tuning
-- Optimizing training methods to lower the computational training costs
+### Scrape GitHub
+```python
+from enigma_ai import GitHubScraper
 
-## Contents
+scraper = GitHubScraper()
+data = scraper.scrape(topics=['machine-learning'], stars=100, max_size=1000) 
+```
 
-This repo contains:
+### Optimize hyperparameters
+```python
+from enigma_ai import HyperparamOptimizer
 
-- Data scraping and filtering scripts
-- Notebooks for model training, evaluation, and cost analysis
-- Trained models for code completion in Java, Ruby, Rust, and Swift
-- An open-source API for accessing the models
-- Tools and documentation for private local fine-tuning
+optimizer = HyperparamOptimizer(model='code-davinci-002')  
 
-## Contributors
+params = optimizer.tune(data, max_epochs=10, target_loss=0.2)
+print(params)
 
-- [Ammar Khairi](https://github.com/ammarnasr)
-- [Mukhtar Mohammed](https://github.com/mukhtar-algezoli) 
-- [Muhammed Saeed](https://github.com/muhammed-saeed)
+# Prints optimal params like LR, BS for target loss 
+```
 
-## License
+### Finetune model
+```python
+from enigma_ai import Finetuner 
 
-This project is licensed under the MIT license. See [LICENSE](LICENSE) for more details.
+finetuner = Finetuner(model='code-davinci-002')
+
+finetuner.fit(data, epochs=10, batch_size=32, lr=2e-5)
+finetuner.save('my_model.pkl')  
+```
+
+And more!
+
+## Contributing
+
+Contributions to enigma_ai are welcome...
