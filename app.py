@@ -45,5 +45,5 @@ with tab2:
 with tab3:
     report_streamlit_app.main(2000)
 
-with tab4:
-    chat()
+# with tab4:
+#     chat()

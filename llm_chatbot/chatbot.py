@@ -110,7 +110,7 @@ def chat():
 
     if st.session_state['chosen_instruction_key'] != "Select a prompt":
 
-        with open('./styles.css') as f:
+        with open('llm_chatbot/styles.css') as f:
             st.markdown(f"<style>{f.read()}</style>",unsafe_allow_html=True)
 
         if 'chosen_llm' not in st.session_state.keys():
