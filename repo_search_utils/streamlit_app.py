@@ -14,6 +14,8 @@ from tqdm.auto import tqdm
 from datasets import load_dataset
 from huggingface_hub import login
 from github import Github, Auth
+import numpy as np
+import json
 
 
 
@@ -125,16 +127,17 @@ def github_read_file(full_name, file_path, github_token=None):
         
     url = f'https://api.github.com/repos/{full_name}/contents/{file_path}'
     r = requests.get(url, headers=headers)
-    r.raise_for_status()
-    data = r.json()
+
     try:
+      r.raise_for_status()
+      data = r.json()
       file_content = data['content']
       file_content_encoding = data.get('encoding')
       if file_content_encoding == 'base64':
           file_content = base64.b64decode(file_content).decode()
       return file_content
     except:
-      pass
+      return None
 
 def display_repo_information(src_df):
     target_row = st.session_state['current_browse_row']
@@ -263,6 +266,8 @@ def fetch_repos_app(k=0):
             owner, repo_name, GLOBAL_KEY = search_params.repo_details(GLOBAL_KEY)
         with st.expander('Specific User'):
             user, GLOBAL_KEY = search_params.user_details(GLOBAL_KEY)
+    
+    # print(topics)
    
     with search_col2:
         with st.expander('Size (1000 = 1MB)'):
@@ -367,6 +372,8 @@ def fetch_repos_app(k=0):
             st.session_state['filename'] = filename
             query = st.session_state['query']
             query, query_params, max_results, filename = st.session_state['query'], st.session_state['query_params'], st.session_state['max_results'], st.session_state['filename']
+            if topic:
+                query = "topic:" + query
             t1.markdown("building query finished")
             GLOBAL_KEY += 1
 
@@ -460,6 +467,8 @@ def extract_code_fun(df, filename, t5, GLOBAL_KEY, k=0):
         'gitconfig': 'Config',
         'git': 'Config',
     }
+    df["code"] = np.nan
+    print(df.columns)
     extracted_filename = filename.replace(".csv", "_with_code.joblib")
     token = gs.authenticate()
     # auth = Auth.Token(token)
@@ -469,7 +478,7 @@ def extract_code_fun(df, filename, t5, GLOBAL_KEY, k=0):
     i = 0
     all_contents = []
     # with st.spinner('Extracting Code Files From Repos...'):
-    for _, row in df.iterrows():
+    for index, row in df.iterrows():
         repo_name = row['full_name']
         repo = repo_name
         # contents = get_repo_contents(g, repo)
@@ -477,6 +486,8 @@ def extract_code_fun(df, filename, t5, GLOBAL_KEY, k=0):
         code_files_dict = {}
         code_files_bar = st.progress(0, text=f"Extracting Code Files From {repo}...")
         j = 0
+        if not contents:
+            continue
         code_files_bar_max = len(contents)
         for code_filepath in contents:
             # code_filename = code_file.name
@@ -489,13 +500,18 @@ def extract_code_fun(df, filename, t5, GLOBAL_KEY, k=0):
             raw_content = github_read_file(repo_name, code_filepath, github_token=token)
             if programing_language not in code_files_dict:
                 code_files_dict[programing_language] = {}
-            code_files_dict[programing_language][code_filepath] = raw_content
+            if raw_content:
+                code_files_dict[programing_language][code_filepath] = raw_content
             j += 1
             code_files_bar.progress(j/code_files_bar_max, text=f"Processed {j} of {code_files_bar_max} files in repo :blue[{repo}]")
         i += 1
         repos_bar.progress(i/repos_bar_max, text=f"Ectracted {i} of {repos_bar_max} repos")
-        all_contents.append(code_files_dict)
-    df['code'] = all_contents
+        # all_contents.append(code_files_dict)
+        # row['code'] = code_files_dict
+        # df["code"]
+        # add code_files_dict to df 
+        df.at[index, 'code'] = json.dumps(code_files_dict)
+    # df['code'] = all_contents
 
     # utils.dump_data(df, f'./saved_searches/{extracted_filename}', driver='joblib')
     st.download_button(
