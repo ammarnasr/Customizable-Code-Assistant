@@ -8,3 +8,5 @@ datasets
 huggingface_hub
 plotly
 torch
+langchain
+clarifai
