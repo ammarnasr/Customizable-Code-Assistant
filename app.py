@@ -2,6 +2,7 @@ import streamlit as st
 from repo_search_utils.streamlit_app import fetch_repos_app, extract_code_app, browse_repo_info_app, upload_dataset_hugging_face
 from fine_tuning_utils.finetuning_streamlit_app import main
 from training_report import report_streamlit_app
+from llm_chatbot.chatbot import chat
 
 st.set_page_config(layout='wide', initial_sidebar_state='collapsed', page_title='Customizable Code Assistant', page_icon=':robot_face:')
 
@@ -32,7 +33,7 @@ st.markdown(
 #     upload_dataset_hugging_face(300)
 
 
-tab1, tab2, tab3 = st.tabs(["Milestone 1", "Milestone 2", "Milestone 3"])
+tab1, tab2, tab3, tab4 = st.tabs(["Milestone 1", "Milestone 2", "Milestone 3", "Milestone 4"])
 
 
 with tab1:
@@ -43,3 +44,6 @@ with tab2:
 
 with tab3:
     report_streamlit_app.main(2000)
+
+# with tab4:
+#     chat()
