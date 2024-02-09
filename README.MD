@@ -1,59 +1,62 @@
 # enigma_ai
 
-enigma_ai is a python package for efficiently finetuning large language models (LLMs) like GPT-3 for code generation. 
-
-## Features
-- GitHub code scraper
-    - Scrape quality code from GitHub based on parameters like stars, size, topics etc. to create a clean dataset for finetuning
-    - Customizable to scrape code in specific languages, code styles etc.  
-- Optimization tools
-    - Find optimal hyperparameters like learning rate, batch size etc for your model and dataset to get best results
-    - Supports major LLMs like GPT-3, Codex and more
-    - Tunes hyperparameters based on compute constraints and desired loss function
-- Easy finetuning
-    - Simple wrapper around HuggingFace and Lorå to finetune LLMs on your dataset
-    - Seamless integration, trains models out-of-the-box on your GPU/TPU
+Tools for simple and efficient training of LLMs for code generation.
 
 ## Installation
 
-```
+```bash
 pip install enigma_ai
 ```
 
 ## Usage
 
-### Scrape GitHub
-```python
-from enigma_ai import GitHubScraper
+### Scraping GitHub Repositories
 
-scraper = GitHubScraper()
-data = scraper.scrape(topics=['machine-learning'], stars=100, max_size=1000) 
+```python
+from enigma_ai.data import scrape
+
+# Set up your GitHub API token
+github_token = 'your_github_api_token'
+
+# Define your search query and parameters
+search_term = 'pentest'
+max_results = 100
+filename = 'fetched_repos.csv'
+
+# Fetch repositories matching the query
+repos_df = scrape.fetch_repos(github_token, max_results, filename, search_term, min_stars=100)
+
+# The 'repos_df' dataframe now contains information about the fetched repositories
 ```
 
-### Optimize hyperparameters
+### Extracting Code from Repositories
+
 ```python
-from enigma_ai import HyperparamOptimizer
+from enigma_ai.data import process
+import pandas as pd
 
-optimizer = HyperparamOptimizer(model='code-davinci-002')  
+# Load the previously fetched repository data
+filename = 'fetched_repos.csv'
+repos_df = pd.read_csv(filename)
 
-params = optimizer.tune(data, max_epochs=10, target_loss=0.2)
-print(params)
+#Limit the number of repositories to process
+repos_df = repos_df.head(1)
 
-# Prints optimal params like LR, BS for target loss 
+# Extract code files from the repositories
+repos_with_code = process.extract_code_from_repos(repos_df, filename, github_token)
+
+#Print the first 1000 characters of the README.md file of the first repository
+print(repos_with_code['code'].values[0]['Markdown']['README.md'][:1000])
 ```
 
-### Finetune model
-```python
-from enigma_ai import Finetuner 
+Detailed usage instructions and API documentation can be found at [docs](https://enigma-ai.readthedocs.io/).
 
-finetuner = Finetuner(model='code-davinci-002')
-
-finetuner.fit(data, epochs=10, batch_size=32, lr=2e-5)
-finetuner.save('my_model.pkl')  
-```
-
-And more!
+For more detailed documentation and examples, please visit the [docs](https://enigma-ai.readthedocs.io/).
 
 ## Contributing
 
-Contributions to enigma_ai are welcome...
+Contributions are welcome! Please read our [contributing guidelines](CONTRIBUTING.md) for more information.
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
