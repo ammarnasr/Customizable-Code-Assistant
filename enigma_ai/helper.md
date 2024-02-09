@@ -13,17 +13,18 @@ enigma_ai/
         process.py
     finetuning/  
         __init__.py
-        params.py
-        train.py
-    models/
-        __init__.py
         peft.py
+        params.py
+        # or whaterver files you see need and name
+    hardware/
+        __init__.py
+        # here I will add the code for Milestone 2 Compute Optimal Stuff
     utils.py
 ```
 
 - `data/` is for the code scraping and processing functionality.
 - `finetuning/` is for estimating training hyperparameters and fine-tuning models.
-- `models/` is for custom model implementations and utilities.
+- `hardware/` is for compute optimal calaculations.
 
 ## Local Development
 
