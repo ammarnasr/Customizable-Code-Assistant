@@ -24,6 +24,8 @@ def query(payload):
  response = requests.post(API_URL, headers=headers, json=payload)
  return response.json()
 
+# st.set_page_config(layout="wide")
+
 
 
 def get_default_models():
@@ -81,6 +83,10 @@ def chatbot():
         except:
             response = "Server is starting...please try again in one minute"
             st.text(response)
+
+        # print(output)
+        # response = output[0]["generated_text"]
+        # st.code(response, line_numbers=True)
 
         # st.write(response)
         # st.write(f":blue[{response}]")
@@ -161,4 +167,4 @@ def chat():
         unsafe_allow_html=True,
     )
 
-chat()
+# chat()

@@ -6,6 +6,7 @@ from llm_chatbot.chatbot import chat
 
 st.set_page_config(layout='wide', initial_sidebar_state='collapsed', page_title='Customizable Code Assistant', page_icon=':robot_face:')
 
+
 st.title("Customizable Code Assistant")
 
 st.markdown(
@@ -45,5 +46,5 @@ with tab2:
 with tab3:
     report_streamlit_app.main(2000)
 
-# with tab4:
-#     chat()
+with tab4:
+    chat()
