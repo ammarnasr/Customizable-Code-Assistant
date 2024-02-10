@@ -24,8 +24,6 @@ def query(payload):
  response = requests.post(API_URL, headers=headers, json=payload)
  return response.json()
 
-st.set_page_config(layout="wide")
-
 
 
 def get_default_models():
@@ -110,7 +108,7 @@ def chat():
 
     if st.session_state['chosen_instruction_key'] != "Select a prompt":
 
-        with open('llm_chatbot/styles.css') as f:
+        with open('./llm_chatbot/styles.css') as f:
             st.markdown(f"<style>{f.read()}</style>",unsafe_allow_html=True)
 
         if 'chosen_llm' not in st.session_state.keys():
