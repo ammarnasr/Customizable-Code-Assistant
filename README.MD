@@ -53,6 +53,31 @@ Detailed usage instructions and API documentation can be found at [docs](https:/
 
 For more detailed documentation and examples, please visit the [docs](https://enigma-ai.readthedocs.io/).
 
+
+## Installation
+
+To use the Enigma AI package, follow these steps:
+
+1. Navigate to the directory containing the Enigma AI package.
+2. Install the required libraries by running the following command:
+
+```bash
+pip install .
+```
+
+
+## Finetuning the LLM for Code Generation
+
+To finetune the LLM for your own code using CodeGen2, follow these steps:
+
+1. Navigate to the directory of the LLM intelligence project.
+2. Install the Enigma AI package by following the installation steps mentioned above.
+3. Run the following script, replacing the placeholders with your specific paths and parameters:
+
+```bash
+python cli.py --main_path /PATH/Customizable-Code-Assistant/LLM-for-code-intelligence-Project/LLM-for-code-intelligence --experiment_name my_experiment --training_data_path JS_files.csv
+```
+
 ## Contributing
 
 Contributions are welcome! Please read our [contributing guidelines](CONTRIBUTING.md) for more information.
@@ -60,3 +85,4 @@ Contributions are welcome! Please read our [contributing guidelines](CONTRIBUTIN
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
+
