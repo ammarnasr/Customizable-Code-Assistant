@@ -158,9 +158,9 @@ query({
     }
     help_text, help_lang = api_help["python"], "python"
     with lang_col:
-      python_btn = st.button("Python", key="python", type="primary" if help_lang != "python" else "secondary")
-      js_btn = st.button("Javascript", key="javascript", type="primary" if help_lang != "javascript" else "secondary")
-      curl_btn = st.button("Curl", key="curl", type="primary" if help_lang != "curl" else "secondary")
+      python_btn = st.button("Python", key="python", type="primary" )
+      js_btn = st.button("Javascript", key="javascript", type="primary")
+      curl_btn = st.button("Curl", key="curl", type="primary")
     if python_btn:
       help_text, help_lang = api_help["python"], "python"
     if js_btn:
