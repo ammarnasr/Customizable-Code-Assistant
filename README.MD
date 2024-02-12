@@ -60,9 +60,10 @@ To use the Enigma AI package, follow these steps:
 
 1. Navigate to the directory containing the Enigma AI package.
 2. Install the required libraries by running the following command:
-
+3. Go the `/PATH/Customizable-Code-Assistant/LLM-for-code-intelligence-Project/LLM-for-code-intelligence/llm_finetuning`
 ```bash
 pip install .
+pip install --no-deps -r requirements.txt
 ```
 
 
