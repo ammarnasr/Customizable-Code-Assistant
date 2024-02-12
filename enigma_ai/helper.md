@@ -62,7 +62,7 @@ from enigma_ai import your_module
 python -m build
 ```
 
-4. Upload your distribution version to PyPI (if older version is already uploaded, you may need to delete it first using `twine`):
+4. Update the version in the setup.py and Upload your distribution version to PyPI (if older version is already uploaded, you may need to delete it first using `twine`):
 
 ```bash
 twine upload dist/*
