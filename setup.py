@@ -3,7 +3,7 @@ import setuptools
 
 setuptools.setup(
     name="enigma_ai", 
-    version="0.2.0",
+    version="0.2.1",
     description="Tools for simple and efficient training of LLMs for code generation",
     long_description=pathlib.Path("README.md").read_text(),
     long_description_content_type="text/markdown",
