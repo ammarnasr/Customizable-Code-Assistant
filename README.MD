@@ -10,6 +10,10 @@ pip install enigma_ai
 
 ## Usage
 
+Detailed usage instructions and API documentation will be available soon.
+
+For more detailed documentation about the project, please refer to the SingularityNET project [here](https://deepfunding.ai/proposal/customizable-code-assistant/)
+
 ### Scraping GitHub Repositories
 
 ```python
@@ -49,21 +53,36 @@ repos_with_code = process.extract_code_from_repos(repos_df, filename, github_tok
 print(repos_with_code['code'].values[0]['Markdown']['README.md'][:1000])
 ```
 
-Detailed usage instructions and API documentation can be found at [docs](https://enigma-ai.readthedocs.io/).
+### Estimating Compute Cost and Performance
 
-For more detailed documentation and examples, please visit the [docs](https://enigma-ai.readthedocs.io/).
+```python
+import enigma_ai.cost.resources as res
+import enigma_ai.cost.performance as perf
 
+gpus = [
+    res.GPUTensorCoreSpec(name="A100", clock_rate_ghz=1.41, num_tensor_cores=6912),
+    res.GPUTensorCoreSpec(name="V100", clock_rate_ghz=1.53, num_tensor_cores=5120),
+]
+gpu_specs = res.GPUSpec(name="NVIDIA", architecture="Ampere", gpus=gpus)
 
-## Installation
+# Define hardware specifications
+hardware = res.HardwareSpec(gpus=[gpu_specs])
 
-To use the Enigma AI package, follow these steps:
+# Define experiment specifications
+spec = res.ExperimentSpec(model_params=1e9, dataset=1e12, hardware=hardware, precision="fp32", hours_trained=1.0)
 
-1. Navigate to the directory containing the Enigma AI package.
-2. Install the required libraries by running the following command:
-3. Go the `/PATH/Customizable-Code-Assistant/LLM-for-code-intelligence-Project/LLM-for-code-intelligence/llm_finetuning`
-```bash
-pip install .
-pip install --no-deps -r requirements.txt
+# Calculate compute cost
+compute = res.calculate_compute_cost(spec)
+print(compute)
+
+# Performance
+scaling_factor = "Model Size"
+model_size = 1e9  # 1 billion parameters
+dataset_size = 1e12  # 1 trillion samples
+scaling_params = perf.estimate_finetuning_performance(
+    scaling_factor, model_size=model_size, dataset_size=dataset_size,
+)
+print(f'Expected Perplexity: {scaling_params["L"]}')
 ```
 
 
@@ -79,11 +98,6 @@ To finetune the LLM for your own code using CodeGen2, follow these steps:
 python cli.py --main_path /PATH/Customizable-Code-Assistant/LLM-for-code-intelligence-Project/LLM-for-code-intelligence --experiment_name my_experiment --training_data_path JS_files.csv
 ```
 
-## Contributing
-
-Contributions are welcome! Please read our [contributing guidelines](CONTRIBUTING.md) for more information.
-
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
-
