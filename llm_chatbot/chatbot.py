@@ -1,108 +1,16 @@
 import streamlit as st
-# from prompts import instructions_data
-from clarifai.modules.css import ClarifaiStreamlitCSS
-from langchain.llms import OpenAI
-from langchain.agents import AgentType, initialize_agent, load_tools
-from langchain.callbacks import StreamlitCallbackHandler
-from langchain.llms import Clarifai
-from langchain import PromptTemplate, LLMChain
-from langchain.chains import ConversationChain
-from langchain.memory import ConversationBufferMemory, ChatMessageHistory
-from langchain.schema import HumanMessage, AIMessage
-import streamlit.components.v1 as components
-import requests
-
-
-
-def query(payload): 
- API_URL = "https://oa6kdk8gxzmfy79k.us-east-1.aws.endpoints.huggingface.cloud"
-
- headers = {
-            "Accept" : "application/json", "Content-Type": "application/json" 
-            }
- 
- response = requests.post(API_URL, headers=headers, json=payload)
- return response.json()
-
-# st.set_page_config(layout="wide")
-
-
-
-def get_default_models():
-  # if 'DEFAULT_MODELS' not in st.secrets:
-  #   st.error("You need to set the default models in the secrets.")
-  #   st.stop()
-
-  # models_list = [x.strip() for x in st.secrets.DEFAULT_MODELS.split(",")]
-  models_list =  ["codegen2"]
-  authers = ["codegen2"]
-  apps = ["something"]
-  models_map = {}
-  select_map = {}
-  for i in range(len(models_list)):
-    m = models_list[i]
-    # id, rem = m.split(':')
-    # author, app = rem.split(';')
-    id = i
-    models_map[id] = {}
-    models_map[id]['author'] = authers[i]
-    models_map[id]['app'] = apps[i]
-    select_map[str(id)+' : '+ authers[i]] = i
-  return models_map, select_map
-
-
-def show_previous_chats():
-  # Display previous chat messages and store them into memory
-  chat_list = []
-  for message in st.session_state['chat_history']:
-    with st.chat_message(message["role"]):
-      if message["role"] == 'user':
-        msg = HumanMessage(content=message["content"])
-      else:
-        msg = AIMessage(content=message["content"])
-      chat_list.append(msg)
-      st.write(message["content"])
-
-  # conversation.memory.chat_memory = ChatMessageHistory(messages=chat_list)
-      
-
-
-
-
-def chatbot():
-  if message := st.chat_input(key="input"):
-    st.chat_message("user").write(message)
-    st.session_state['chat_history'].append({"role": "user", "content": message})
-    with st.chat_message("assistant"):
-      with st.spinner("Thinking..."):
-        # print(message)
-        output = query({ "inputs": message, "parameters": {}})
-        try:
-            response = output[0]["generated_text"]
-            st.code(response, line_numbers=True)
-        except:
-            response = "Server is starting...please try again in one minute"
-            st.text(response)
-
-        # print(output)
-        # response = output[0]["generated_text"]
-        # st.code(response, line_numbers=True)
-
-        # st.write(response)
-        # st.write(f":blue[{response}]")
-        # st.write("This is :blue[test]")
-        message = {"role": "assistant", "content": response}
-        st.session_state['chat_history'].append(message)
-    st.write("\n***\n")
-
 
 def chat():
     st.markdown("<h2 style='text-align: center; color: Black;'>Chat With Our Off The Shelf Code Assistant</h2>", unsafe_allow_html=True)
-    st.markdown('[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://customizable-code-assistant-chat.streamlit.app/)', unsafe_allow_html=True)
+    _ , chat_col, _ = st.columns([4, 5, 1])
+    with chat_col:
+      st.markdown('[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://customizable-code-assistant-chat.streamlit.app/)', unsafe_allow_html=True)
+    st.info("Please note to limit costs, the chatbot goes to sleep after 15 minutes of inactivity, this may delay the first response")
     st.markdown('---')
     st.markdown("<h2 style='text-align: center; color: Black;'>How to use the API</h2>", unsafe_allow_html=True)
-    lang_col, help_col = st.columns([1, 5])
-    api_help = {
+    api_help_models = {
+      "Security Model":{
+
         "python": '''
 import requests
 
@@ -118,7 +26,7 @@ def query(payload):
 
 output = query({
 	"inputs": "Can you please let us know more details about your ",
-	"parameters": {}
+	"config": {}
 })
         ''',
         "javascript": '''
@@ -140,7 +48,7 @@ output = query({
 
 query({
     "inputs": "Can you please let us know more details about your ",
-    "parameters": {}
+    "config": {}
 }).then((response) => {
 	console.log(JSON.stringify(response));
 });
@@ -150,12 +58,78 @@ query({
 -X POST \
 -d '{
     "inputs": "Can you please let us know more details about your ",
-    "parameters": {}
+    "config": {}
 }' \
 -H "Accept: application/json" \
 -H "Content-Type: application/json"
         '''
+      },
+      "React Model": {
+        "python": '''
+        import requests
+
+API_URL = "https://s6izgwncr4ncciig.us-east-1.aws.endpoints.huggingface.cloud"
+headers = {
+	"Accept" : "application/json",
+	"Authorization": "Bearer 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",
+	"Content-Type": "application/json" 
+}
+
+def query(payload):
+	response = requests.post(API_URL, headers=headers, json=payload)
+	return response.json()
+
+output = query({
+	"inputs": "Can you please let us know more details about your ",
+	"parameters": {}
+})
+        ''',
+        "javascript": '''
+        async function query(data) {
+	const response = await fetch(
+		"https://s6izgwncr4ncciig.us-east-1.aws.endpoints.huggingface.cloud",
+		{
+			headers: { 
+				"Accept" : "application/json",
+				"Authorization": "Bearer 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",
+				"Content-Type": "application/json" 
+			},
+			method: "POST",
+			body: JSON.stringify(data),
+		}
+	);
+	const result = await response.json();
+	return result;
+}
+
+query({
+    "inputs": "Can you please let us know more details about your ",
+    "parameters": {}
+}).then((response) => {
+	console.log(JSON.stringify(response));
+});
+        ''',
+        "curl": '''
+        curl "https://s6izgwncr4ncciig.us-east-1.aws.endpoints.huggingface.cloud" \
+-X POST \
+-H "Accept: application/json" \
+-H "Authorization: Bearer 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" \
+-H "Content-Type: application/json" \
+-d '{
+    "inputs": "Can you please let us know more details about your ",
+    "parameters": {}
+}'
+        '''
+      } 
     }
+    #let the user choose the model
+    models_options = list(api_help_models.keys())
+    model = st.selectbox("Choose the model you want to use", models_options)
+    if model == "Security Model":
+      st.info("The security model is free to use but requires a Token from Hugging Face")
+    lang_col, help_col = st.columns([1, 5])
+
+    api_help = api_help_models[model]
     help_text, help_lang = api_help["python"], "python"
     with lang_col:
       python_btn = st.button("Python", key="python", type="primary" )
@@ -172,77 +146,10 @@ query({
 
     st.markdown('---')
     st.markdown("<h2 style='text-align: center; color: Black;'>Train Your Own Model With Our Python Package</h2>", unsafe_allow_html=True)
-    #add link to the python package
-    st.markdown('[![PyPI version](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)](https://pypi.org/project/enigma-ai/0.2.0/)', unsafe_allow_html=True)
-    return
-    prompt_list = ["Security code assistant"]
-    models_map, select_map = get_default_models()
-    default_llm = "codegen2"
-    llms_map = {'Select an LLM':None}
-    llms_map.update(select_map)
-
-    chosen_instruction_key = st.selectbox(
-        'Select a prompt',
-        options=prompt_list,
-        index=(prompt_list.index(st.session_state['chosen_instruction_key']) if 'chosen_instruction_key' in st.session_state else 0)
-    )
-
-    # Save the chosen option into the session state
-    st.session_state['chosen_instruction_key'] = chosen_instruction_key
-
-    if st.session_state['chosen_instruction_key'] != "Select a prompt":
-
-        with open('./llm_chatbot/styles.css') as f:
-            st.markdown(f"<style>{f.read()}</style>",unsafe_allow_html=True)
-
-        if 'chosen_llm' not in st.session_state.keys():
-            chosen_llm = st.selectbox(label="Select an LLM", options=llms_map.keys())
-            if chosen_llm and llms_map[chosen_llm] is not None:
-                if 'chosen_llm' in st.session_state.keys():
-                    st.session_state['chosen_llm'] = None
-                st.session_state['chosen_llm'] = llms_map[chosen_llm]
-
-
-    # Access instruction by key
-    # instruction = instructions_data[st.session_state['chosen_instruction_key']]['instruction']
-
-    template = f"""{"Write first few lines of a function and I will try to finish it for you!"} + {{chat_history}}
-    Human: {{input}}
-    AI Assistant:"""
-
-    prompt = PromptTemplate(template=template, input_variables=["chat_history", "input"])
-
-    template = f"""Write first few lines of a function and I will try to finish it for you! + {{chat_history}}
-    Human: {{input}}
-    AI Assistant:"""
-
-
-
-    # Initialize the bot's first message only after LLM was chosen
-    if "chosen_llm" in st.session_state.keys() and "chat_history" not in st.session_state.keys():
-        with st.spinner("Chatbot is initializing..."):
-            # initial_message = conversation.predict(input='', chat_history=[])
-            initial_message = "Write the first few lines of a function and I will try to finish it for you!"
-            st.session_state['chat_history'] = [{"role": "assistant", "content": initial_message}]
-
-    if "chosen_llm" in st.session_state.keys():
-        show_previous_chats()
-        chatbot()
-
-    st.markdown(
-        """
-    <style>
-    .streamlit-chat.message-container .content p {
-        white-space: pre-wrap !important;
-        word-wrap: break-word !important;
-        overflow-wrap: break-word !important;
-    }
-    .output {
-        white-space: pre-wrap !important;
-        }
-    </style>
-    """,
-        unsafe_allow_html=True,
-    )
-
-# chat()
+    #add link to the python package and colab notebook demo
+    _ , col_pip,_, col_colab, _ = st.columns([1, 2, 2, 2, 1])
+    with col_pip:
+      st.markdown('[![PyPI version](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)](https://pypi.org/project/enigma-ai/0.2.1/)', unsafe_allow_html=True)
+    with col_colab:
+      st.markdown('[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1ccE5vUMitMBBBAKvXaKLMqN9zB1Sc2Ri?usp=sharing)', unsafe_allow_html=True)
+    
