@@ -5,10 +5,12 @@ def chat():
     _ , chat_col, _ = st.columns([4, 5, 1])
     with chat_col:
       st.markdown('[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://customizable-code-assistant-chat.streamlit.app/)', unsafe_allow_html=True)
+    st.info("Please note to limit costs, the chatbot goes to sleep after 15 minutes of inactivity, this may delay the first response")
     st.markdown('---')
     st.markdown("<h2 style='text-align: center; color: Black;'>How to use the API</h2>", unsafe_allow_html=True)
-    lang_col, help_col = st.columns([1, 5])
-    api_help = {
+    api_help_models = {
+      "Security Model":{
+
         "python": '''
 import requests
 
@@ -24,7 +26,7 @@ def query(payload):
 
 output = query({
 	"inputs": "Can you please let us know more details about your ",
-	"parameters": {}
+	"config": {}
 })
         ''',
         "javascript": '''
@@ -46,7 +48,7 @@ output = query({
 
 query({
     "inputs": "Can you please let us know more details about your ",
-    "parameters": {}
+    "config": {}
 }).then((response) => {
 	console.log(JSON.stringify(response));
 });
@@ -56,12 +58,78 @@ query({
 -X POST \
 -d '{
     "inputs": "Can you please let us know more details about your ",
-    "parameters": {}
+    "config": {}
 }' \
 -H "Accept: application/json" \
 -H "Content-Type: application/json"
         '''
+      },
+      "React Model": {
+        "python": '''
+        import requests
+
+API_URL = "https://s6izgwncr4ncciig.us-east-1.aws.endpoints.huggingface.cloud"
+headers = {
+	"Accept" : "application/json",
+	"Authorization": "Bearer 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",
+	"Content-Type": "application/json" 
+}
+
+def query(payload):
+	response = requests.post(API_URL, headers=headers, json=payload)
+	return response.json()
+
+output = query({
+	"inputs": "Can you please let us know more details about your ",
+	"parameters": {}
+})
+        ''',
+        "javascript": '''
+        async function query(data) {
+	const response = await fetch(
+		"https://s6izgwncr4ncciig.us-east-1.aws.endpoints.huggingface.cloud",
+		{
+			headers: { 
+				"Accept" : "application/json",
+				"Authorization": "Bearer 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",
+				"Content-Type": "application/json" 
+			},
+			method: "POST",
+			body: JSON.stringify(data),
+		}
+	);
+	const result = await response.json();
+	return result;
+}
+
+query({
+    "inputs": "Can you please let us know more details about your ",
+    "parameters": {}
+}).then((response) => {
+	console.log(JSON.stringify(response));
+});
+        ''',
+        "curl": '''
+        curl "https://s6izgwncr4ncciig.us-east-1.aws.endpoints.huggingface.cloud" \
+-X POST \
+-H "Accept: application/json" \
+-H "Authorization: Bearer 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" \
+-H "Content-Type: application/json" \
+-d '{
+    "inputs": "Can you please let us know more details about your ",
+    "parameters": {}
+}'
+        '''
+      } 
     }
+    #let the user choose the model
+    models_options = list(api_help_models.keys())
+    model = st.selectbox("Choose the model you want to use", models_options)
+    if model == "Security Model":
+      st.info("The security model is free to use but requires a Token from Hugging Face")
+    lang_col, help_col = st.columns([1, 5])
+
+    api_help = api_help_models[model]
     help_text, help_lang = api_help["python"], "python"
     with lang_col:
       python_btn = st.button("Python", key="python", type="primary" )
