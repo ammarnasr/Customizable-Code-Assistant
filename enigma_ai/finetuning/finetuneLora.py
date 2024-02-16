@@ -17,11 +17,11 @@ def main_finetune(main_path, experiment_name, training_data_path):
     training_data_path = os.path.join(main_path, training_data_path)
 
     # Load the training data
-    data = pd.read_csv(training_data_path, low_memory=False)
-    # data = data.rename(columns={'code': 'content'})
-    shuffled_data = data.sample(frac=1).reset_index(drop=True)
-    shuffled_data.to_csv(os.path.join(main_path, 'JS_filesShuffled.csv'), index=False)
-    dataset = load_dataset("csv", data_files=os.path.join(main_path, 'JS_filesShuffled.csv'))
+    # data = pd.read_csv(training_data_path, low_memory=False)
+    # # data = data.rename(columns={'code': 'content'})
+    # shuffled_data = data.sample(frac=1).reset_index(drop=True)
+    # shuffled_data.to_csv(os.path.join(main_path, 'JS_filesShuffled.csv'), index=False)
+    dataset = load_dataset("csv", data_files=training_data_path))
     train_test_split = dataset['train'].train_test_split(test_size=0.2)
     test_valid_split = train_test_split['test'].train_test_split(test_size=0.5)
     dataset = DatasetDict({
